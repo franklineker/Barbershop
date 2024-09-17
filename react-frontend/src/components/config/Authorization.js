@@ -38,9 +38,11 @@ export default function Authorization() {
 
     const handleAuthorizationCode = () => {
         const codeVerifier = handleCodeVerifier();
+        const challenge = handleCodeChallenge(codeVerifier);
+
         setAuth({ codeVerifier });
         localStorage.setItem('codeVerifier', codeVerifier);
-        const challenge = handleCodeChallenge(codeVerifier);
+
         const body = new URLSearchParams();
         body.set('client_id', CLIENT_ID);
         body.set("redirect_uri", REDIRECT_URI);

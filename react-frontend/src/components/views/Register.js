@@ -91,10 +91,11 @@ export default function Register() {
         event.preventDefault();
 
         const check1 = USERNAME_REGEX.test(username);
-        const check2 = PWD_REGEX.test(pwd);
+        const check2 = EMAIL_REGEX.test(email);
+        const check3 = PWD_REGEX.test(pwd);
         console.log(check1)
         console.log(check2)
-        if (!check1 || !check2) {
+        if (!check1 || !check2 || !check3) {
             setErrMsg("Entrada inválida!");
             return;
         }
@@ -103,10 +104,9 @@ export default function Register() {
             const response = await authAxios
                 .post(REGISTER_URL,
                     {
-                        username: username,
-                        email: email,
+                        username: email,
                         password: pwd,
-                        roles: ["USER"]
+                        roles: ["CUSTOMER"]
                     }
                 );
             console.log(response?.data);

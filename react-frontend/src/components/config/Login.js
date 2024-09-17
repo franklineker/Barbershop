@@ -22,14 +22,18 @@ export default function Login() {
 
         const seachParams = new URLSearchParams(window.location.search);
         const code = seachParams.get("code");
+        const codeDecoded = decodeURIComponent(code);
         const codeVerifier = localStorage.getItem("codeVerifier");
+        console.log("verifier on login ==> ", codeVerifier)
 
         const body = new URLSearchParams();
         body.set("grant_type", GRANT_TYPE);
         body.set("client_id", CLIENT_ID);
         body.set("redirect_uri", REDIRECT_URL);
         body.set("code_verifier", codeVerifier);
-        body.set("code", code);
+        body.set("code", codeDecoded);
+
+        console.log(body.toString())
 
         try {
             const response = await axios.post(TOKEN_URL, body, {
@@ -60,7 +64,7 @@ export default function Login() {
             navigate(from, { replace: true });
 
         } catch (error) {
-            console.log(error);
+            console.log("error no token ==> ", error);
             if (!error?.response) {
                 alert("Servidor de autenticação não está respondendo...")
             }
@@ -72,9 +76,4 @@ export default function Login() {
         handleToken();
     }, [])
 
-    // return (
-    //     <section className={styles.section}>
-    //         <span>Login:</span>
-    //     </section>
-    // )
 }

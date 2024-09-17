@@ -11,7 +11,7 @@ spring:
             client-secret: ${GOOGLE_CLIENT_SECRET}
             scope:
               - email
-              - profile
+#              - profile
           provider:
             google:
               user-name-attribute: email
@@ -28,9 +28,9 @@ spring:
   jpa:
     database: POSTGRESQL
     show-sql: true
-    generate-ddl: true
+    generate-ddl: false
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -41,6 +41,8 @@ config:
     issuer-uri: ${ISSUER_URI}
     logout-uri: ${LOGOUT_URI}
     react-app-uri: ${REACT_APP_URI}
+    redirect-uri: ${REDIRECT_URI}
+    consent-uri: ${CONSENT_URI}
 
 logging:
   level:

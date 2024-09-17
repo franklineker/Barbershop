@@ -1,5 +1,8 @@
 package com.frank.authorization_server.security;
 
+import com.frank.authorization_server.config.IdentityAuthenticationSuccessHandler;
+import com.frank.authorization_server.config.LoginSuccessHandler;
+import com.frank.authorization_server.repository.UserRepository;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
@@ -31,6 +34,7 @@ import org.springframework.security.oauth2.server.authorization.token.OAuth2Toke
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
@@ -50,7 +54,8 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class WebSecurityConfiguration {
 
-    public final PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
 
     @Value("${config.uris.issuer-uri}")
     private String issuerUri;
@@ -92,19 +97,21 @@ public class WebSecurityConfiguration {
                     "/css/login.css",
                     "/images/**",
                     "/login",
+                    "/auth/**",
                     "/logout",
                     "/error",
                     "/webjars/**").permitAll()
                     .anyRequest().authenticated();
         }).formLogin(form -> form.loginPage("/login"))
-                .oauth2Login(login -> login.loginPage("/login"))
+                .oauth2Login(login -> login
+                        .loginPage("/login")
+                        .successHandler(authenticationSuccessHandler()))
                 .oauth2ResourceServer((resourceServer) -> resourceServer.jwt(Customizer.withDefaults()));
 
         http.logout(logout -> logout.logoutSuccessUrl(logoutUri));
 
         return http.build();
     }
-
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
@@ -184,4 +191,10 @@ public class WebSecurityConfiguration {
         return new HttpSessionEventPublisher();
     }
 
+    private AuthenticationSuccessHandler authenticationSuccessHandler () {
+        IdentityAuthenticationSuccessHandler successHandler = new IdentityAuthenticationSuccessHandler();
+        successHandler.setOAuth2UserHandler(new LoginSuccessHandler(userRepository));
+
+        return successHandler;
+    }
 }

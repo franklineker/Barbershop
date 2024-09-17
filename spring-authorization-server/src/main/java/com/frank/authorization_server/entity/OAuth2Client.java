@@ -1,7 +1,5 @@
 package com.frank.authorization_server.entity;
 
-import com.frank.authorization_server.config.converter.AuthorizationGrantTypeConverter;
-import com.frank.authorization_server.config.converter.ClientAuthenticationMethodConverter;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

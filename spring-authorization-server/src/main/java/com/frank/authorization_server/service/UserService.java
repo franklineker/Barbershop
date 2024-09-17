@@ -26,16 +26,12 @@ public class UserService {
 
     public User save(UserRequest userReq) {
 
-        boolean isEmailPresent = Optional.ofNullable(userRepository.findByEmail(userReq.getEmail())).isPresent();
-        boolean isUsernamePresent = Optional.ofNullable(userRepository.findByUsername(userReq.getUsername())).isPresent();
+        boolean isEmailPresent = Optional.ofNullable(userRepository.findByUsername(userReq.getUsername())).isPresent();
 
         System.out.println("email present: " + isEmailPresent);
-        System.out.println("username present: " + isUsernamePresent);
 
-        if(isUsernamePresent){
-            throw new UserAlreadyExistsException("Username already taken: " + userReq.getUsername(), "username");
-        }else if(isEmailPresent){
-            throw new UserAlreadyExistsException("Email already taken: " + userReq.getEmail(), "email");
+        if (isEmailPresent){
+            throw new UserAlreadyExistsException("Email already taken: " + userReq.getUsername(), "email");
         }
 
         User user = UserMapper.toUser(userReq);

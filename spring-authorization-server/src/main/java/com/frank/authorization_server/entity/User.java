@@ -25,30 +25,18 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
-    @Column(nullable = false, unique = true, name = "email")
-    private String email;
-    @Column(nullable = false, unique = true, name = "username")
+    @Column(name = "email")
     private String username;
     private String password;
-    private String firstName;
-    private String lastName;
-    private String fullName = firstName + " " + lastName;
-
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
-
-    private String pictureUrl;
-
-//    @ElementCollection(fetch = FetchType.EAGER)
-//    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
-//    @Column(name = "role")
     private List<String> roles;
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     private boolean expired = false;
     private boolean locked = false;
+    @Column(name = "credentials_expired")
     private boolean credentialsExpired = false;
     private boolean disabled = false;
 
