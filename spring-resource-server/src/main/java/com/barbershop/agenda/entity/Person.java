@@ -2,22 +2,24 @@ package com.barbershop.agenda.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "orders")
-public class Order {
+@Table(name = "persons")
+@Inheritance(strategy = InheritanceType.JOINED)
+public class Person extends User{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
-    private LocalDateTime date;
+    private String name;
+    private String phone_number;
 
 }
