@@ -2,18 +2,20 @@ package com.barbershop.agenda.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@SuperBuilder
 @Entity
 @Table(name = "app_user")
+@Inheritance(strategy = InheritanceType.JOINED)
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,10 +23,11 @@ public class User {
 
     private String username;
     private String password;
-    private List<String> roles;
+    private Set<String> roles;
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
-    private String name;
-    private String email;
-    private String phone;
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
 }

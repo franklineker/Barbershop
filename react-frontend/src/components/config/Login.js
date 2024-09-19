@@ -33,7 +33,6 @@ export default function Login() {
         body.set("code_verifier", codeVerifier);
         body.set("code", codeDecoded);
 
-        console.log(body.toString())
 
         try {
             const response = await axios.post(TOKEN_URL, body, {

@@ -18,4 +18,7 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private LocalDateTime date;
+    private Barber barber;
+    private Customer customer;
+    private String status;
 }
