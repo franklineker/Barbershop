@@ -1,20 +1,16 @@
 package com.barbershop.agenda.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-@Data
+@Getter
+@Setter
 @SuperBuilder
-@AllArgsConstructor
-@NoArgsConstructor
 @Entity
 @Table(name = "barbers")
+@PrimaryKeyJoinColumn(name = "id")
 public class Barber extends Person{
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+
 }

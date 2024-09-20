@@ -11,7 +11,7 @@ import java.util.Set;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class BarberDto {
+public class BarberRequestDto {
 
     private String email;
     private String password;
