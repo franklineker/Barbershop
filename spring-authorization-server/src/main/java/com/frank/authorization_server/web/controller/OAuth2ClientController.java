@@ -17,7 +17,7 @@ public class OAuth2ClientController {
     @Autowired
     private OAuth2ClientService service;
 
-    @PostMapping(value = "/save", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = "/save", consumes = MediaType.APPLICATION_JSON_VALUE)
     public OAuth2Client createOAuth2Client(@RequestBody OAuth2ClientRequest request) {
         return service.saveClient(request);
     }

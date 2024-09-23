@@ -1,6 +1,5 @@
 package com.barbershop.agenda.enums;
 
-import com.barbershop.agenda.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -12,7 +11,8 @@ import java.util.stream.Stream;
 public enum UserRole {
     ADMIN(1000, "ADMIN"),
     BARBER(1001, "BARBER"),
-    CUSTOMER(1002, "CUSTOMER");
+    CUSTOMER(1002, "CUSTOMER"),
+    OAUTH2_USER(1003, "OAUTH2_USER");
 
     private int code;
     private String description;

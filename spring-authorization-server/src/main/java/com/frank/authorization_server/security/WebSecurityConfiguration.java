@@ -2,6 +2,7 @@ package com.frank.authorization_server.security;
 
 import com.frank.authorization_server.config.IdentityAuthenticationSuccessHandler;
 import com.frank.authorization_server.config.LoginSuccessHandler;
+import com.frank.authorization_server.entity.User;
 import com.frank.authorization_server.repository.UserRepository;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
@@ -21,9 +22,11 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
@@ -45,6 +48,7 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -86,7 +90,7 @@ public class WebSecurityConfiguration {
         http.cors(Customizer.withDefaults());
         http.csrf(c -> c.ignoringRequestMatchers(
                 "/login",
-                "/auth/**",
+                "/auth/user",
                 "/images/**",
                 "/css/login.css",
                 "/webjars/**",
@@ -97,7 +101,6 @@ public class WebSecurityConfiguration {
                     "/css/login.css",
                     "/images/**",
                     "/login",
-                    "/auth/**",
                     "/logout",
                     "/error",
                     "/webjars/**").permitAll()
@@ -106,7 +109,7 @@ public class WebSecurityConfiguration {
                 .oauth2Login(login -> login
                         .loginPage("/login")
                         .successHandler(authenticationSuccessHandler()))
-                .oauth2ResourceServer((resourceServer) -> resourceServer.jwt(Customizer.withDefaults()));
+                .oauth2ResourceServer((resourceServer) -> resourceServer.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
 
         http.logout(logout -> logout.logoutSuccessUrl(logoutUri));
 
@@ -126,18 +129,27 @@ public class WebSecurityConfiguration {
 
     @Bean
     public OAuth2TokenCustomizer<JwtEncodingContext> tokenCustomizer() {
-        long now = Instant.now().getEpochSecond();
 
         return context -> {
             Authentication principal = context.getPrincipal();
+
             if (context.getTokenType().getValue().equals("id_token")) {
                 context.getClaims().claim("token_type", "id_token");
             } else if (context.getTokenType().getValue().equals("access_token")) {
                 context.getClaims().claim("token_type", "access_token");
                 List<String> roles = principal.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
-                context.getClaims()
-                        .claim("roles", roles)
-                        .claim("username", principal.getName());
+                roles.add("CUSTOMER");
+                if (principal.getPrincipal() instanceof OAuth2User oauth2User) {
+                    String email = oauth2User.getAttribute("email");
+                    context.getClaims()
+                            .claim("sub", email)
+                            .claim("roles", roles)
+                            .claim("username", principal.getName());
+                }else {
+                    context.getClaims()
+                            .claim("roles", roles)
+                            .claim("username", principal.getName());
+                }
             }
         };
 

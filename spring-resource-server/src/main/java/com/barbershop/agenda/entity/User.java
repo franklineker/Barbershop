@@ -3,6 +3,7 @@ package com.barbershop.agenda.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -17,7 +18,7 @@ import java.util.Set;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private int id;
 
     @Column(name = "username")
     private String email;
@@ -28,5 +29,6 @@ public class User {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
 
 }

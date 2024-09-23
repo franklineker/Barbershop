@@ -17,5 +17,5 @@ public class Admin extends Person{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private int id;
 }

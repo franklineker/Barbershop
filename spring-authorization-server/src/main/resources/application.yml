@@ -4,6 +4,11 @@ server:
 spring:
   security:
     oauth2:
+      authorization:
+        server:
+          token:
+            jwt:
+              time-to-live: 30m
       client:
         registration:
           google:

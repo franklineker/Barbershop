@@ -13,8 +13,8 @@ public enum OrderStatus {
     PENDING(2000, "PENDING"),
     COMPLETED(2001, "COMPLETED");
 
-    private int code;
-    private String description;
+    private final int code;
+    private final String description;
 
     public static OrderStatus ofCode(Integer code){
         return Stream.of(values())
