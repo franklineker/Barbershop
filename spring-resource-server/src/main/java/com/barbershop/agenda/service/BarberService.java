@@ -3,13 +3,16 @@ package com.barbershop.agenda.service;
 import com.barbershop.agenda.dto.CreateBarberRequestDto;
 import com.barbershop.agenda.dto.UpdateBarberRequestDto;
 import com.barbershop.agenda.entity.Barber;
-import com.barbershop.agenda.errors.BarberNotFoundException;
+import com.barbershop.agenda.enums.UserRole;
+import com.barbershop.agenda.exceptions.BarberNotFoundException;
+import com.barbershop.agenda.exceptions.NullPasswordException;
 import com.barbershop.agenda.mapper.BarberMapper;
 import com.barbershop.agenda.repository.BarberRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,29 +24,25 @@ public class BarberService {
     private final PasswordEncoder passwordEncoder;
 
     public Barber createBarber(CreateBarberRequestDto dto) {
-        Barber barber = BarberMapper.toBarber(dto);
+        if(dto.getPassword() == null){
+            throw new NullPasswordException("Password cannot be null");
+        }
+        Barber barber = BarberMapper.toBarberCreate(dto);
         barber.setPassword(passwordEncoder.encode(dto.getPassword()));
         return barberRepository.save(barber);
     }
 
-    public Barber getByEmail(String email) {
-        try {
-            Barber barber = barberRepository.getByEmail(email);
-            System.out.println(barber);
-            return barber;
-        } catch (RuntimeException e) {
-            throw new BarberNotFoundException("Barber Not Found.");
-        }
+    public Barber findByEmail(String email) {
+        Barber barber = barberRepository.findByEmail(email)
+                .orElseThrow(() -> new BarberNotFoundException("Barber Not Found"));
+        barber.getRoles().add("BARBER");
+        return barber;
     }
 
-    public Barber getById(int id) {
-        try {
-            Barber barber = barberRepository.getById(id);
-            System.out.println(barber);
-            return barber;
-        } catch (RuntimeException e) {
-            throw new BarberNotFoundException("Barber Not Found");
-        }
+    public Barber findById(int id) {
+        Barber barber = barberRepository.findById(id).orElseThrow(() -> new BarberNotFoundException("Barber Not Found"));
+        System.out.println("Barber retured from DB: " + barber.toString());
+        return barber;
     }
 
     public List<Barber> findAll() {
@@ -51,27 +50,16 @@ public class BarberService {
     }
 
     public Barber updateBarber(UpdateBarberRequestDto requestDto) {
-        if(!barberRepository.existsById(requestDto.getId())){
-            throw new BarberNotFoundException("Barber Not Found");
-        }
 
-        Barber barber = barberRepository.getById(requestDto.getId());
-
-        if(requestDto.getName() != null) {
-            barber.setName(requestDto.getName());
-        }
-        if( requestDto.getPhoneNumber() != null){
-            barber.setPhoneNumber(requestDto.getPhoneNumber());
-        }
-
-        return barberRepository.save(barber);
+        Barber currentBarber = barberRepository.findById(requestDto.getId())
+                .orElseThrow(() -> new BarberNotFoundException("Barber Not Found"));
+        Barber updatedBarber = BarberMapper.toBarberUpdate(requestDto, currentBarber);
+        return barberRepository.save(updatedBarber);
     }
 
     public Barber deleteBarber(int id) {
-        if(!barberRepository.existsById(id)){
-            throw new BarberNotFoundException("Barber Not Found");
-        }
-        Barber barber = barberRepository.getById(id);
+        Barber barber = barberRepository.findById(id)
+                .orElseThrow(() -> new BarberNotFoundException("Barber Not Found"));
         barberRepository.deleteById(id);
         return barber;
     }

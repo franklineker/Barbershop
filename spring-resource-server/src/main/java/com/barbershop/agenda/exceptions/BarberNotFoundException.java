@@ -1,4 +1,4 @@
-package com.barbershop.agenda.errors;
+package com.barbershop.agenda.exceptions;
 
 public class BarberNotFoundException extends RuntimeException{
 

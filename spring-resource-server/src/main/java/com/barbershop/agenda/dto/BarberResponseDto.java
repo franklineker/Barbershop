@@ -15,4 +15,7 @@ public class BarberResponseDto {
     private String email;
     private String name;
     private String phoneNumber;
+    private String statusDescription;
+    private Integer statusCode;
+
 }

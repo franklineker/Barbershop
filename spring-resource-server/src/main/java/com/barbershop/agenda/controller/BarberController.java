@@ -29,13 +29,13 @@ public class BarberController {
 
     @GetMapping(path = "/id/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<BarberResponseDto> findBarberById(@PathVariable Integer id) {
-        BarberResponseDto barberDto = BarberMapper.toBarberResponseDto(barberService.getById(id));
+        BarberResponseDto barberDto = BarberMapper.toBarberResponseDto(barberService.findById(id));
         return ResponseEntity.ok(barberDto);
     }
 
     @GetMapping(path = "/email/{email}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<BarberResponseDto> findBarberByEmail(@PathVariable String email) {
-        BarberResponseDto barberDto = BarberMapper.toBarberResponseDto(barberService.getByEmail(email));
+        BarberResponseDto barberDto = BarberMapper.toBarberResponseDto(barberService.findByEmail(email));
         return ResponseEntity.ok(barberDto);
     }
 

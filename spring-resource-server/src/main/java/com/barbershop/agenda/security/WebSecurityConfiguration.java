@@ -24,13 +24,13 @@ public class WebSecurityConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(HttpMethod.POST, "/barber")
-                        .hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/barber")
-                        .hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/barber")
-                        .hasAnyAuthority("ADMIN", "BARBER")
-                        .anyRequest().authenticated()
+//                        .requestMatchers(HttpMethod.POST, "/barber")
+//                        .hasAuthority("ADMIN")
+//                        .requestMatchers(HttpMethod.DELETE, "/barber")
+//                        .hasAuthority("ADMIN")
+//                        .requestMatchers(HttpMethod.PUT, "/barber")
+//                        .hasAnyAuthority("ADMIN", "BARBER")
+                        .anyRequest().permitAll()
                 )
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(jwt -> {
                     jwt.decoder(JwtDecoders.fromOidcIssuerLocation(issuerUri));

@@ -30,18 +30,12 @@ public class LoginSuccessHandler implements Consumer<OAuth2User> {
     @Override
     public void accept(OAuth2User oAuth2User) {
         String oAuth2UserEmail = oAuth2User.getAttributes().get("email").toString();
-        Collection<? extends GrantedAuthority> roles = oAuth2User.getAuthorities();
-        List<String> roleNames = roles.stream()
-                .map(GrantedAuthority::getAuthority)
-                .toList();
-        List<String> roleNamesList = new ArrayList<>(roleNames);
-        roleNamesList.add("CUSTOMER");
-        System.out.println("role names: " + roleNames);
-
+        List<String> roles = new ArrayList<String>();
+        roles.add("CUSTOMER");
 
         if (!Optional.ofNullable(userRepository.findByUsername(oAuth2UserEmail)).isPresent()) {
             User user = UserMapper.fromOauth2User(oAuth2User);
-            user.setRoles(roleNamesList);
+            user.setRoles(roles);
 
             this.userRepository.save(user);
         }else {

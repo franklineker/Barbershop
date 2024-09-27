@@ -11,8 +11,7 @@ import java.util.stream.Stream;
 public enum UserRole {
     ADMIN(1000, "ADMIN"),
     BARBER(1001, "BARBER"),
-    CUSTOMER(1002, "CUSTOMER"),
-    OAUTH2_USER(1003, "OAUTH2_USER");
+    CUSTOMER(1002, "CUSTOMER");
 
     private int code;
     private String description;

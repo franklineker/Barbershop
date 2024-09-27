@@ -14,5 +14,6 @@ public class UpdateBarberRequestDto {
     private int id;
     private String name;
     private String phoneNumber;
+    private Integer statusCode;
 
 }
