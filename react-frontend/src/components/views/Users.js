@@ -44,7 +44,7 @@ export default function Users() {
 
     return (
         <section className="d-flex flex-column align-items-center justify-content-center h-100">
-            <h1>Usuários</h1>
+            <h1>Clientes</h1>
             <article className="bg-dark text-light p-5 rounded">
                 {users?.length
                     ? (

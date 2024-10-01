@@ -14,6 +14,7 @@ import Unauthorized from './components/views/Unauthorized';
 import Reports from './components/views/Reports';
 import Security from './components/views/Security';
 import Agenda from './components/views/Agenda';
+import Barber from './components/views/barber/Barber';
 import Users from './components/views/Users';
 
 function App() {
@@ -45,7 +46,10 @@ function App() {
                     <Route path='agenda' element={<Agenda />} />
                 </Route>
                 <Route element={<RequireAuth allowedRoles={['ADMIN']} />}>
-                    <Route path='users' element={<Users />} />
+                    <Route path='barbers' element={< Barber />} />
+                </Route>
+                <Route element={<RequireAuth allowedRoles={['ADMIN']} />}>
+                    <Route path='users' element={< Users />} />
                 </Route>
             </Route>
         </Routes>

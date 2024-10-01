@@ -12,7 +12,6 @@ aside {
 aside nav {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
     height: 100vh;
 }
 
@@ -58,6 +57,8 @@ aside li:hover a {
 
 #adminArea li {
     font-size: 1rem;
+    display: flex;
+    justify-content: space-between;
 }
 
 header {
