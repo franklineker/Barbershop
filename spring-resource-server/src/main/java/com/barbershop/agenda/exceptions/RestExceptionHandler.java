@@ -27,7 +27,7 @@ public class RestExceptionHandler {
             if("unique_username".equals(violationException.getConstraintName())){
                 apiError = new ApiError(
                         "Data conflict: A user with this email already exists",
-                        HttpStatus.CONTINUE.value(),
+                        HttpStatus.CONFLICT.value(),
                         "Conflict",
                         new Date()
                 );

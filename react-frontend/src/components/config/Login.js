@@ -60,7 +60,7 @@ export default function Login() {
             })));
 
             localStorage.removeItem("codeVerifier");
-            navigate(from, { replace: true });
+            navigate(from);
 
         } catch (error) {
             console.log("error no token ==> ", error);

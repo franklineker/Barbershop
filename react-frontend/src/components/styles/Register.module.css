@@ -23,7 +23,7 @@
 }
 
 .form {
-    background-color: #535454;
+    background-color: #020430;
     align-self: center;
     justify-content: center;
     color: white;
@@ -72,9 +72,13 @@
 }
 
 .button {
-    background-color: #020430;
-    color: white;
+    background-color: white;
+    color: #020430;
     align-self: center;
-    width: 100%;
-    margin-top: 2vh;
+}
+
+.button:hover {
+    background-color: white;
+    color: #020430;
+    font-weight: bolder;
 }

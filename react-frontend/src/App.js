@@ -14,7 +14,7 @@ import Unauthorized from './components/views/Unauthorized';
 import Reports from './components/views/Reports';
 import Security from './components/views/Security';
 import Agenda from './components/views/Agenda';
-import Barber from './components/views/barber/Barber';
+import Barber from './components/views/Barber';
 import Users from './components/views/Users';
 
 function App() {

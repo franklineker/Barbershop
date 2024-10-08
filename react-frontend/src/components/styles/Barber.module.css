@@ -1,0 +1,83 @@
+.tableRow:hover {
+    background-color: #79797a;
+    color: white
+}
+
+.tableRow {
+    background-color: #cfd0d1;
+    color: #020430
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+    height: 85vh
+}
+
+.tableContainer {
+    display: flex;
+    flex-direction: column;
+    height: 75vh;
+    overflow-y: scroll
+}
+
+.tableHeader {
+    background-color: #020430;
+    color: white
+}
+
+.tableBody {
+    background-color: #cfd0d1;
+}
+
+.settingsButton {
+    font-size: 1rem;
+    color: #020430;
+    align-self: end
+}
+
+.trashButton:hover {
+    color: red;
+}
+
+.pencilButton:hover {
+    color: yellow;
+}
+
+.formContainer {
+    position: relative;
+    margin-bottom: 10px
+}
+
+.settingsContainer {
+    position: relative;
+    display: flex;
+    justify-content: center;
+}
+
+.delete {
+    background-color: #020430;
+    color: white;
+    padding: 2rem;
+}
+
+.addButton {
+    background-color: #020430;
+    color: white;
+    width: 5.5rem;
+    margin-right: 1.1rem;
+    align-self: end;
+}
+
+.addButton:hover {
+    background-color: #020430;
+    color: white;
+    font-weight: bolder;
+}
+
+.offscreen {
+    position: absolute;
+    left: -9999px
+}

@@ -1,12 +1,10 @@
-
 import { useEffect, useRef, useState } from 'react';
 import styles from '../styles/Register.module.css';
-import { faCheck, faTimes, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
+import { faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { authAxios } from '../../api/axios';
 import { Link } from 'react-router-dom';
+import usePrivateResourceAxios from '../../hooks/usePrivateResourceAxios';
 
-const USERNAME_REGEX = /^[A-z][A-z0-9-_]{3,23}$/;
 const EMAIL_REGEX = /^[A-z0-9._%+-]+@[A-z0-9-.]+\.[A-z]{2,}$/;
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!#@$%]).{8,24}$/;
 const UPPER_REGEX = /^(?=.*[A-Z]).*$/;
@@ -14,16 +12,19 @@ const LOWER_REGEX = /^(?=.*[a-z]).*$/;
 const NUM_REGEX = /^(?=.*[0-9]).*$/;
 const SPECIAL_CHAR_REGEX = /^(.*[!#@$%]).*$/;
 const PWD_SIZE_REGEX = /^(?=.*).{8,24}$/;
-const REGISTER_URL = "/auth/user";
 
-export default function Register() {
+export default function Register({ parentData, dataToParent }) {
+
+    const sendToParent = () => {
+        setRegisterData((prevData) => ({ ...prevData, isFormOpen: false }));
+        dataToParent(registerData);
+    }
+    const [registerData, setRegisterData] = useState({});
+    const privateResourceAxios = usePrivateResourceAxios();
 
     const usernameRef = useRef();
     const errRef = useRef();
-
-    const [username, setUsername] = useState('');
-    const [validUsername, setValidUsername] = useState(false);
-    const [usernameFocus, setUsernameFocus] = useState(false);
+    const [name, setName] = useState('');
 
     const [email, setEmail] = useState('');
     const [validEmail, setValidEmail] = useState(false);
@@ -53,11 +54,6 @@ export default function Register() {
     }, [])
 
     useEffect(() => {
-        const result = USERNAME_REGEX.test(username);
-        setValidUsername(result);
-    }, [username])
-
-    useEffect(() => {
         const result = EMAIL_REGEX.test(email);
         setValidEmail(result);
     }, [email])
@@ -85,53 +81,59 @@ export default function Register() {
 
     useEffect(() => {
         setErrMsg('');
-    }, [username, pwd, matchPwd, email])
+    }, [name, pwd, matchPwd, email])
+
+    const [userRoles, setUserRoles] = useState([]);
 
     const handleSubmit = async (event) => {
         event.preventDefault();
 
-        const check1 = USERNAME_REGEX.test(username);
         const check2 = EMAIL_REGEX.test(email);
         const check3 = PWD_REGEX.test(pwd);
-        console.log(check1)
-        console.log(check2)
-        if (!check1 || !check2 || !check3) {
+
+        if (!check2 || !check3) {
             setErrMsg("Entrada inválida!");
             return;
         }
 
         try {
-            const response = await authAxios
-                .post(REGISTER_URL,
-                    {
-                        username: email,
-                        password: pwd,
-                        roles: ["CUSTOMER"]
-                    }
-                );
+            setUserRoles(() => {
+                if (parentData?.parentName === "Barbeiro") {
+                    return 1001;
+                } else if (parentData?.parentName === "Admin") {
+                    return 1000;
+                }
+            })
+            const body = {
+                email,
+                password: pwd,
+                roles: userRoles,
+                name,
+            }
+            console.log(body)
+            const response = await privateResourceAxios.post(parentData?.apiPath || "/customer", body);
             console.log(response?.data);
-            setUsername('');
+            setName('');
             setPwd('');
             setMatchPwd('');
             setSuccess(true);
 
         } catch (error) {
-
-            const errorReason = error.response.data.reason;
+            console.log("response => ", error.response)
+            const errorMessage = error?.response?.data?.message;
 
             if (!error?.response) {
                 setErrMsg('O servidor não está respondendo.');
             }
-
-            if (error.response.status === 409) {
-                if (errorReason === "username") {
-                    setErrMsg('Nome de usuário já existe.');
-                } else if (errorReason === "email") {
-                    setErrMsg('e-mail já cadastrado.');
+            if (error.response?.status === 400) {
+                setErrMsg(error.response.data.message)
+            }
+            if (error.response?.status === 409) {
+                if (errorMessage.includes("email already exists")) {
+                    setErrMsg("Esse email já existe");
+                } else {
+                    setErrMsg(error.response.data.message);
                 }
-                console.log(error);
-            } else {
-                setErrMsg("Falha ao registrar.");
             }
 
             errRef.current.focus();
@@ -143,26 +145,38 @@ export default function Register() {
         <>
             {success ?
                 (
-                    <section className={styles.section}>
-                        <div className={`${styles.form} d-flex flex-column align-items-center`}>
-                            <span>Usuário registrado com sucesso!</span><br />
-                            <Link to='/authorization' className='btn btn-warning w-50'>Fazer login</Link>
-                        </div>
-                    </section>
-                ) :
+                    parentData?.parentName === "Barbeiro" ?
+                        (
+                            <section className={styles.section}>
+                                <div className={`${styles.form} d-flex flex-column align-items-center`}>
+                                    <span>{parentData?.parentName} registrado com sucesso!</span><br />
+                                    <button
+                                        className='btn btn-warning w-50'
+                                        onClick={() => sendToParent()}
+                                    >
+                                        Fechar
+                                    </button>
+                                </div>
+                            </section>
+                        )
+                        :
+                        (
+                            <section className={styles.section}>
+                                <div className={`${styles.form} d-flex flex-column align-items-center`}>
+                                    <span>Usuário registrado com sucesso!</span><br />
+                                    <Link to='/authorization' className='btn btn-warning w-50'>Fazer login</Link>
+                                </div>
+                            </section>
+                        )
+                )
+                :
                 (
                     <section section className={styles.section}>
                         <p ref={errRef} className={errMsg ? styles.errmsg : styles.offScreen} aria-live='assertive'>{errMsg}</p>
                         <form onSubmit={handleSubmit} className={styles.form}>
-                            <h1>Registre-se</h1>
+                            <h1 className='fs-3 mb-3 align-self-center'>{parentData?.title || "Registre-se"}</h1>
                             <label htmlFor='username'>
-                                Usuário:
-                                <span className={validUsername ? styles.valid : styles.hide}>
-                                    <FontAwesomeIcon icon={faCheck} />
-                                </span>
-                                <span className={validUsername || !username ? styles.hide : styles.invalid}>
-                                    <FontAwesomeIcon icon={faTimes} />
-                                </span>
+                                Nome:
                             </label>
                             <input
                                 className={styles.input}
@@ -170,24 +184,10 @@ export default function Register() {
                                 type='text'
                                 ref={usernameRef}
                                 autoComplete='off'
-                                onChange={(e) => setUsername(e.target.value)}
+                                onChange={(e) => setName(e.target.value)}
                                 required
-                                aria-invalid={validUsername ? "false" : "true"}
                                 aria-describedby="uidnote"
-                                onFocus={() => setUsernameFocus(true)}
-                                onBlur={() => setUsernameFocus(false)}
                             />
-                            <p
-                                id='uidnote'
-                                className={`${usernameFocus && username && !validUsername ? styles.instructions : styles.offscreen} d-flex`}>
-
-                                <FontAwesomeIcon icon={faInfoCircle} className='mt-1' />
-                                <span className='mx-2'>
-                                    Precisa ter de 4 a 24 caracteres. <br />
-                                    Precisa começar com uma letra. <br />
-                                    Letras, números, hífens, underlines apenas.
-                                </span>
-                            </p>
                             <label htmlFor='email'>
                                 E-mail:
                                 <span className={validEmail && emailFocus ? styles.valid : styles.hide}>
@@ -296,13 +296,24 @@ export default function Register() {
                                     A senha e sua confirmação devem ser iguais.
                                 </span>
                             </p>
-
-                            <button
-                                className={`btn btn-lg ${styles.button}`}
-                                onClick={(e) => handleSubmit(e)}
-                                disabled={!validUsername || !validPwd || !validMatch || !validEmail ? true : false}>
-                                Enviar
-                            </button>
+                            <div className='d-flex justify-content-between mt-2'>
+                                <button
+                                    className={`btn btn-md ${styles.button}`}
+                                    style={parentData?.isCalledFromParent ? { width: "45%" } : { width: "100%" }}
+                                    onClick={(e) => handleSubmit(e)}
+                                    type='submit'
+                                    disabled={!validPwd || !validMatch || !validEmail ? true : false}
+                                >
+                                    Enviar
+                                </button>
+                                <button
+                                    className={`btn btn-md btn-danger ${parentData?.isCalledFromParent ? "" : styles.offscreen}`}
+                                    style={{ width: "45%" }}
+                                    onClick={(e) => sendToParent()}
+                                >
+                                    Cancelar
+                                </button>
+                            </div>
                         </form>
                     </section >
                 )
