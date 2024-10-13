@@ -19,8 +19,9 @@
 .tableContainer {
     display: flex;
     flex-direction: column;
-    height: 75vh;
-    overflow-y: scroll
+    height: 70vh;
+    overflow-y: scroll;
+    font-size: 0.8rem;
 }
 
 .tableHeader {
@@ -47,20 +48,47 @@
 }
 
 .formContainer {
-    position: relative;
-    margin-bottom: 10px
+    background-color: #020430;
+    padding-bottom: 1.5rem;
+    position: fixed;
+    left: 44%;
+    border: solid #cfb12b 2px;
+    border-radius: 1rem
 }
 
 .settingsContainer {
-    position: relative;
+    position: fixed;
+    left: 42%;
     display: flex;
     justify-content: center;
-}
-
-.delete {
+    align-items: center;
     background-color: #020430;
+    width: 70vh;
+    min-height: 45vh;
     color: white;
     padding: 2rem;
+    border: solid #cfb12b 2px;
+    border-radius: 1rem;
+}
+
+.edit {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.editSuccess {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem;
+    width: 40vh;
+    left: 50%;
+    background-color: #020430;
+    color: white;
+    border: solid #cfb12b 2px;
+    border-radius: 1rem;
 }
 
 .addButton {
@@ -68,7 +96,9 @@
     color: white;
     width: 5.5rem;
     margin-right: 1.1rem;
+    margin-bottom: 0.5rem;
     align-self: end;
+    font-size: 0.8rem;
 }
 
 .addButton:hover {

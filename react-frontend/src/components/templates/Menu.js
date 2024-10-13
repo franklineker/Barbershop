@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Link } from "react-router-dom";
-import { faCalendarAlt, faScissors, faChartColumn, faEnvelope, faHome, faLock, faUser, faUsers } from '@fortawesome/free-solid-svg-icons';
+import { faCalendarAlt, faScissors, faChartColumn, faHome, faLock, faUser, faUsers } from '@fortawesome/free-solid-svg-icons';
 import useAuth from "../../hooks/useAuth";
 
 export default function Menu() {
@@ -40,7 +40,7 @@ export default function Menu() {
                                 <span style={{ width: "25px" }}>
                                     <FontAwesomeIcon icon={faUsers} />
                                 </span>
-                                <Link to="/users">Clientes</Link>
+                                <Link to="/customers">Clientes</Link>
                             </li>
                             <li>
                                 <span style={{ width: "25px" }}>
@@ -53,12 +53,6 @@ export default function Menu() {
                 </div>
                 <div>
                     <ul>
-                        <li>
-                            <span style={{ width: "25px" }}>
-                                <FontAwesomeIcon icon={faEnvelope} />
-                            </span>
-                            <Link to="/contact">Contato</Link>
-                        </li>
                         <li>
                             <span style={{ width: "25px" }}>
                                 <FontAwesomeIcon icon={faUser} />

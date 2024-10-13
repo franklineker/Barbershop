@@ -6,7 +6,6 @@ import Register from './components/views/Register';
 import Login from './components/config/Login';
 import Authorization from './components/config/Authorization';
 import Profile from './components/views/Profile';
-import Contact from './components/views/Contact';
 import Help from './components/views/Help';
 import RequireAuth from './components/config/RequireAuth';
 import Layout from './components/templates/Layout';
@@ -15,7 +14,7 @@ import Reports from './components/views/Reports';
 import Security from './components/views/Security';
 import Agenda from './components/views/Agenda';
 import Barber from './components/views/Barber';
-import Users from './components/views/Users';
+import Customer from './components/views/Customer';
 
 function App() {
     return (
@@ -28,13 +27,12 @@ function App() {
                 <Route path='authorization' element={<Authorization />} />
                 <Route path='help' element={<Help />} />
                 <Route path='unauthorized' element={<Unauthorized />} />
-                <Route path='contact' element={<Contact />} />
 
                 {/* private routes: must be logged in*/}
-                <Route element={<RequireAuth allowedRoles={['USER', 'ADMIN']} />}>
+                <Route element={<RequireAuth allowedRoles={['CUSTOMER', 'ADMIN']} />}>
                     <Route path='profile' element={<Profile />} />
                 </Route>
-                <Route element={<RequireAuth allowedRoles={['USER', 'ADMIN']} />}>
+                <Route element={<RequireAuth allowedRoles={['CUSTOMER', 'ADMIN']} />}>
                     <Route path='security' element={<Security />} />
                 </Route>
 
@@ -49,7 +47,7 @@ function App() {
                     <Route path='barbers' element={< Barber />} />
                 </Route>
                 <Route element={<RequireAuth allowedRoles={['ADMIN']} />}>
-                    <Route path='users' element={< Users />} />
+                    <Route path='customers' element={< Customer />} />
                 </Route>
             </Route>
         </Routes>

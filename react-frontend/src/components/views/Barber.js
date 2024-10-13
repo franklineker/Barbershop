@@ -1,15 +1,14 @@
-import { faPencilSquare, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import axios from 'axios';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTable } from 'react-table';
 import Register from './Register';
 import styles from '../styles/Barber.module.css';
 import { faTrash } from '@fortawesome/free-solid-svg-icons/faTrash';
 import { faPencil } from '@fortawesome/free-solid-svg-icons/faPencil';
-import { privateResourceAxios } from '../../api/axios';
+import usePrivateResourceAxios from '../../hooks/usePrivateResourceAxios';
+import { faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 
-const RESOURCE_URI = process.env.REACT_APP_RESOURCE_BASE_URL + "/barber";
+const RESOURCE_URI = "/barber";
 
 export default function Barber() {
 
@@ -20,7 +19,10 @@ export default function Barber() {
     const [isFormOpen, setIsFormOpen] = useState();
     const [isDelete, setIsDelete] = useState();
     const [isEdit, setIsEdit] = useState();
-    console.log("barbers")
+    const [deleteSuccess, setDeleteSuccess] = useState(false);
+    const [editSuccess, setEditSuccess] = useState(false);
+
+    const privateResourceAxios = usePrivateResourceAxios();
 
     const columns = useMemo(() => [
         {
@@ -47,7 +49,7 @@ export default function Barber() {
 
     const getBarbers = async () => {
         try {
-            const response = await axios.get(RESOURCE_URI);
+            const response = await privateResourceAxios.get(RESOURCE_URI);
             setBarbers(response.data);
             return response.data;
         } catch (error) {
@@ -60,7 +62,7 @@ export default function Barber() {
 
     var data = useMemo(() => {
         return barbers.map(barber => {
-            const formatedStatus = barber.statusDescription.charAt(0) + barber.statusDescription.slice(1).toLowerCase();
+            const formatedStatus = barber.statusCode === 3000 ? "Ativo" : "Inativo";
             const formatedBarbers = {
                 ...barber,
                 statusDescription: formatedStatus,
@@ -73,29 +75,51 @@ export default function Barber() {
 
     const handleDataFromChild = (data) => {
         setIsFormOpen(data.isFormOpen)
+        setIncToGetBarbers(prev => prev + 1)
     }
 
     const handleSelectedBarber = (index) => {
         const barber = data.find((current, currentIndex) => currentIndex === index);
         barber.isSelected = barber.isSelected ? false : true;
         setSelectedBarber(barber);
-        console.log(data);
+        console.log(barber);
     }
 
-    const openDeleteAlert = (index) => {
+    const handleDeleteWarning = (index) => {
         handleSelectedBarber(index);
         setIsDelete(true);
+        setIsEdit(false);
+    }
+
+    const handleEditFrom = (index) => {
+        handleSelectedBarber(index);
+        setIsEdit(true);
+        setIsDelete(false);
+    }
+
+    const handleEdit = async (event) => {
+        event.preventDefault();
+        try {
+            console.log("update => ", selectedBarber)
+            await privateResourceAxios.put(RESOURCE_URI, selectedBarber);
+            setIncToGetBarbers(prev => prev + 1);
+            setIsEdit(false);
+            setEditSuccess(true);
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     const handleDelete = async () => {
+
+
         try {
-            const response = await privateResourceAxios.delete(`${RESOURCE_URI}/${selectedBarber.id}`);
-            alert(`Barbeiro ${response?.data?.name} exculído com sucesso.`);
+            await privateResourceAxios.delete(`${RESOURCE_URI}/${selectedBarber.id}`);
             setIncToGetBarbers(prev => prev + 1);
             setIsDelete(false);
+            setDeleteSuccess(true);
         } catch (error) {
             console.log(error);
-            alert(error?.response?.data);
         }
     }
 
@@ -105,17 +129,19 @@ export default function Barber() {
 
     return (
         <section className={styles.container}>
-            <button
-                onClick={(e) => setIsFormOpen(true)}
-                className={isFormOpen || isDelete || isEdit ? styles.offscreen : `${styles.addButton} btn btn-md`}>
-                Novo +
-            </button>
-            <h1
-                className={isFormOpen || isDelete || isEdit ? styles.offscreen : "fs-4 fw-bold align-self-center"}
-            >
-                Barbeiros
-            </h1>
-            <div className={isFormOpen || isDelete || isEdit ? styles.offscreen : styles.tableContainer} >
+            <div className='d-flex justify-content-between'>
+                <h1
+                    className={isFormOpen || isDelete || isEdit ? "styles.offscreen fs-4 fw-bold align-self-center" : "fs-4 fw-bold align-self-center"}
+                >
+                    Barbeiros
+                </h1>
+                <button
+                    onClick={(e) => setIsFormOpen(true)}
+                    className={isFormOpen || isDelete || isEdit ? styles.offscreen : `${styles.addButton} btn btn-sm`}>
+                    Novo +
+                </button>
+            </div>
+            <div className={isFormOpen || isDelete || isEdit ? "" : styles.tableContainer} >
 
                 <table style={{ width: "100%" }} {...table.getTableProps()}>
                     <thead>
@@ -141,7 +167,7 @@ export default function Barber() {
                                 >
                                     {row.cells.map((cell, cellIndex) => (
                                         (cellIndex !== 4 ?
-                                            <td className='p-1 fw-bold' key={cellIndex} {...cell.getCellProps()}>
+                                            <td className='p-2 fw-bold' key={cellIndex} {...cell.getCellProps()}>
                                                 {cell.render("Cell")}
                                             </td>
                                             :
@@ -150,13 +176,13 @@ export default function Barber() {
                                                     type='button'
                                                     icon={faPencil}
                                                     className={isFormOpen ? styles.offscreen : (`${styles.settingsButton} ${styles.pencilButton} mx-2`)}
-                                                    onClick={(e) => setIsEdit(true)}
+                                                    onClick={(e) => handleEditFrom(rowIndex)}
                                                 />
                                                 <FontAwesomeIcon
                                                     type='button'
                                                     icon={faTrash}
                                                     className={isFormOpen ? styles.offscreen : (`${styles.settingsButton} ${styles.trashButton} mx-2`)}
-                                                    onClick={() => openDeleteAlert(rowIndex)}
+                                                    onClick={() => handleDeleteWarning(rowIndex)}
                                                 />
                                             </td>
                                         )
@@ -169,14 +195,38 @@ export default function Barber() {
             </div>
             {
                 isFormOpen ? <div className={styles.formContainer}>
-                    <Register parentData={{ title: "Cadastrar Barbeiro", isCalledFromParent: true, apiPath: "/barber", parentName: "Barbeiro" }} dataToParent={handleDataFromChild} />
+                    <Register
+                        parentData={{
+                            title: "Cadastrar Barbeiro",
+                            isCalledFromParent: true,
+                            apiPath: "/barber",
+                            parentName: "Barbeiro"
+                        }}
+                        dataToParent={handleDataFromChild} />
                 </div> : null
+            }
+            {
+                deleteSuccess ?
+                    <div className={`${styles.editSuccess}`}>
+                        <FontAwesomeIcon icon={faCheckCircle} className='text-success fs-5 mx-2 mb-1' />
+                        <span className='fs-6'>
+                            Excluído!
+                        </span><br />
+                        <button
+                            className='btn btn-sm btn-light w-50'
+                            onClick={() => setDeleteSuccess(false)}
+                        >
+                            Fechar
+                        </button>
+                    </div>
+                    :
+                    null
             }
             {
                 isDelete ?
                     <div className={styles.settingsContainer}>
                         <div className={styles.delete}>
-                            <h3 className='fs-5 mb-5'><span>Tem certeza que deseja excluir o barbeiro <strong>{selectedBarber?.name}</strong>?</span></h3>
+                            <h3 className='fs-5 mb-5 text-center'><span>Tem certeza que deseja excluir o barbeiro <strong>{selectedBarber?.name}</strong>?</span></h3>
                             <div className='d-flex justify-content-around'>
                                 <button className='btn btn-success w-25' onClick={handleDelete}>Sim</button>
                                 <button className='btn btn-danger w-25' onClick={() => setIsDelete(false)}>Não</button>
@@ -187,11 +237,52 @@ export default function Barber() {
                     null
             }
             {
+                editSuccess ?
+                    <div className={`${styles.editSuccess}`}>
+                        <FontAwesomeIcon icon={faCheckCircle} className='text-success fs-5 mx-2 mb-1' />
+                        <span className='fs-6'>
+                            Salvo!
+                        </span><br />
+                        <button
+                            className='btn btn-sm btn-light w-50'
+                            onClick={() => setEditSuccess(false)}
+                        >
+                            Fechar
+                        </button>
+                    </div>
+                    :
+                    null
+            }
+            {
                 isEdit ?
                     <div className={`${styles.settingsContainer}`}>
-                        <form className={`p-3 bg-dark text-light`}>
-                            <h3 className='fs-5'>Editar</h3>
-                            <button onClick={() => setIsEdit(false)}>Cancelar</button>
+                        <form className={`${styles.edit}`} onSubmit={(e) => handleEdit(e)}>
+                            <h3 className='fs-5 align-self-center mb-2'>Editar</h3>
+                            <label htmlFor='name'>Nome</label>
+                            <input
+                                type='text'
+                                name='name'
+                                className='mb-2'
+                                value={selectedBarber?.name}
+                                onChange={(e) => setSelectedBarber(prev => ({ ...prev, name: e.target.value }))} />
+                            <label htmlFor='phone'>Telefone</label>
+                            <input
+                                type='text'
+                                name='phone'
+                                className='mb-2'
+                                value={selectedBarber?.phoneNumber}
+                                onChange={(e) => setSelectedBarber(prev => ({ ...prev, phoneNumber: e.target.value }))} />
+                            <label htmlFor='email'>E-mail</label>
+                            <input
+                                type='text'
+                                name='email'
+                                className='mb-2'
+                                value={selectedBarber?.email}
+                                disabled />
+                            <div className='d-flex justify-content-around mt-4'>
+                                <button className='btn btn-success w-25' type='submit'>Sim</button>
+                                <button className='btn btn-danger w-25' onClick={() => setIsEdit(false)}>Não</button>
+                            </div>
                         </form>
                     </div>
                     :
