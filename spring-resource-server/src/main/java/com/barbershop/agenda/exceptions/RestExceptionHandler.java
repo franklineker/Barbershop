@@ -3,8 +3,6 @@ package com.barbershop.agenda.exceptions;
 import com.barbershop.agenda.errors.ApiError;
 import com.barbershop.agenda.errors.ApiErrorConflict;
 import com.barbershop.agenda.errors.ApiErrorNotFound;
-import com.barbershop.agenda.exceptions.BarberNotFoundException;
-import com.barbershop.agenda.exceptions.EmailAlreadyTakenException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.postgresql.util.PSQLException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -62,8 +60,8 @@ public class RestExceptionHandler {
         return ResponseEntity.status(httpStatus).body(apiError);
     }
 
-    @ExceptionHandler(BarberNotFoundException.class)
-    public ResponseEntity<ApiErrorNotFound> handleBarberNotFound(BarberNotFoundException e) {
+    @ExceptionHandler(AppEntityNotFoundException.class)
+    public ResponseEntity<ApiErrorNotFound> handleBarberNotFound(AppEntityNotFoundException e) {
         ApiErrorNotFound apiErrorNotFound  = new ApiErrorNotFound(e.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiErrorNotFound);
     }

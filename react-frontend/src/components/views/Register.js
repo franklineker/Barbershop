@@ -97,22 +97,22 @@ export default function Register({ parentData, dataToParent }) {
         }
 
         try {
-            setUserRoles(() => {
+            const getRole = () => {
                 if (parentData?.parentName === "Barbeiro") {
                     return 1001;
                 } else if (parentData?.parentName === "Admin") {
                     return 1000;
+                } else if (parentData?.parentName === "Cliente") {
+                    return 1002;
                 }
-            })
+            }
             const body = {
                 email,
                 password: pwd,
-                roles: userRoles,
+                roles: [getRole()],
                 name,
             }
-            console.log(body)
-            const response = await privateResourceAxios.post(parentData?.apiPath || "/customer", body);
-            console.log(response?.data);
+            await privateResourceAxios.post(parentData?.apiPath || "/customer", body);
             setName('');
             setPwd('');
             setMatchPwd('');
@@ -145,7 +145,7 @@ export default function Register({ parentData, dataToParent }) {
         <>
             {success ?
                 (
-                    parentData?.parentName === "Barbeiro" ?
+                    parentData?.parentName ?
                         (
                             <section className={styles.section}>
                                 <div className={`${styles.form} d-flex flex-column align-items-center`}>

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTable } from 'react-table';
@@ -78,6 +79,20 @@ export default function Barber() {
         setIncToGetBarbers(prev => prev + 1)
     }
 
+    const handleSettingsClose = (type) => {
+        if (type === "edit") {
+            setIsEdit(false);
+        } else if (type === "editSuccess") {
+            setEditSuccess(false);
+        } else if (type === "delete") {
+            setIsDelete(false);
+        } else if (type === "deleteSuccess") {
+            setDeleteSuccess(false);
+        }
+        setSelectedBarber(null);
+        setIncToGetBarbers(prev => prev + 1);
+    }
+
     const handleSelectedBarber = (index) => {
         const barber = data.find((current, currentIndex) => currentIndex === index);
         barber.isSelected = barber.isSelected ? false : true;
@@ -102,7 +117,6 @@ export default function Barber() {
         try {
             console.log("update => ", selectedBarber)
             await privateResourceAxios.put(RESOURCE_URI, selectedBarber);
-            setIncToGetBarbers(prev => prev + 1);
             setIsEdit(false);
             setEditSuccess(true);
         } catch (error) {
@@ -115,7 +129,6 @@ export default function Barber() {
 
         try {
             await privateResourceAxios.delete(`${RESOURCE_URI}/${selectedBarber.id}`);
-            setIncToGetBarbers(prev => prev + 1);
             setIsDelete(false);
             setDeleteSuccess(true);
         } catch (error) {
@@ -131,57 +144,82 @@ export default function Barber() {
         <section className={styles.container}>
             <div className='d-flex justify-content-between'>
                 <h1
-                    className={isFormOpen || isDelete || isEdit ? "styles.offscreen fs-4 fw-bold align-self-center" : "fs-4 fw-bold align-self-center"}
+                    className={"fs-4 fw-bold align-self-center"}
                 >
                     Barbeiros
                 </h1>
                 <button
                     onClick={(e) => setIsFormOpen(true)}
-                    className={isFormOpen || isDelete || isEdit ? styles.offscreen : `${styles.addButton} btn btn-sm`}>
+                    className={`${styles.addButton} btn btn-sm`}>
                     Novo +
                 </button>
             </div>
-            <div className={isFormOpen || isDelete || isEdit ? "" : styles.tableContainer} >
-
+            <div className={styles.tableContainer} >
                 <table style={{ width: "100%" }} {...table.getTableProps()}>
-                    <thead>
+                    <thead key={1}>
                         {table.headerGroups.map(headerGroup => (
-                            <tr className={styles.tableHeader} key={headerGroup.id} {...headerGroup.getHeaderGroupProps()}>
-                                {headerGroup.headers.map((column) =>
-                                    <th className='p-2' key={column.id} {...column.getHeaderProps()}>
-                                        {column.render("Header")}
-                                    </th>
-
-                                )}
+                            <tr
+                                className={styles.tableHeader}
+                                {...headerGroup.getHeaderGroupProps()}
+                                key={1}
+                            >
+                                {headerGroup.headers.map((column) => {
+                                    return (
+                                        <th
+                                            className='p-2'
+                                            {...column.getHeaderProps()}
+                                            key={column.id}
+                                        >
+                                            {column.render("Header")}
+                                        </th>
+                                    )
+                                })}
                             </tr>
                         ))}
                     </thead>
-                    <tbody className={styles.tableBody} {...table.getTableBodyProps()}>
+                    <tbody
+                        className={styles.tableBody}
+                        {...table.getTableBodyProps()}
+                        key={2}
+                    >
                         {table.rows.map((row, rowIndex) => {
                             table.prepareRow(row);
                             return (
                                 <tr
-                                    key={rowIndex}
                                     className={styles.tableRow}
                                     {...row.getRowProps()}
+                                    key={rowIndex}
                                 >
                                     {row.cells.map((cell, cellIndex) => (
                                         (cellIndex !== 4 ?
-                                            <td className='p-2 fw-bold' key={cellIndex} {...cell.getCellProps()}>
+                                            <td
+                                                className='p-2 fw-bold'
+                                                {...cell.getCellProps()}
+                                                key={cellIndex}
+                                            >
                                                 {cell.render("Cell")}
                                             </td>
                                             :
-                                            <td className='d-flex py-2 justify-content-end'>
+                                            <td className='d-flex py-2 justify-content-end' key={cellIndex}>
                                                 <FontAwesomeIcon
                                                     type='button'
                                                     icon={faPencil}
-                                                    className={isFormOpen ? styles.offscreen : (`${styles.settingsButton} ${styles.pencilButton} mx-2`)}
+                                                    className={isFormOpen || isDelete || isEdit || editSuccess || deleteSuccess
+                                                        ?
+                                                        styles.offscreen
+                                                        :
+                                                        (`${styles.settingsButton} ${styles.pencilButton} mx-2`)
+                                                    }
                                                     onClick={(e) => handleEditFrom(rowIndex)}
                                                 />
                                                 <FontAwesomeIcon
                                                     type='button'
                                                     icon={faTrash}
-                                                    className={isFormOpen ? styles.offscreen : (`${styles.settingsButton} ${styles.trashButton} mx-2`)}
+                                                    className={isFormOpen || isDelete || isEdit || editSuccess || deleteSuccess
+                                                        ? styles.offscreen
+                                                        :
+                                                        (`${styles.settingsButton} ${styles.trashButton} mx-2`)
+                                                    }
                                                     onClick={() => handleDeleteWarning(rowIndex)}
                                                 />
                                             </td>
@@ -214,7 +252,7 @@ export default function Barber() {
                         </span><br />
                         <button
                             className='btn btn-sm btn-light w-50'
-                            onClick={() => setDeleteSuccess(false)}
+                            onClick={() => handleSettingsClose("deleteSuccess")}
                         >
                             Fechar
                         </button>
@@ -229,7 +267,7 @@ export default function Barber() {
                             <h3 className='fs-5 mb-5 text-center'><span>Tem certeza que deseja excluir o barbeiro <strong>{selectedBarber?.name}</strong>?</span></h3>
                             <div className='d-flex justify-content-around'>
                                 <button className='btn btn-success w-25' onClick={handleDelete}>Sim</button>
-                                <button className='btn btn-danger w-25' onClick={() => setIsDelete(false)}>Não</button>
+                                <button className='btn btn-danger w-25' onClick={() => handleSettingsClose("delete")}>Não</button>
                             </div>
                         </div>
                     </div>
@@ -245,7 +283,7 @@ export default function Barber() {
                         </span><br />
                         <button
                             className='btn btn-sm btn-light w-50'
-                            onClick={() => setEditSuccess(false)}
+                            onClick={() => handleSettingsClose("editSuccess")}
                         >
                             Fechar
                         </button>
@@ -258,30 +296,30 @@ export default function Barber() {
                     <div className={`${styles.settingsContainer}`}>
                         <form className={`${styles.edit}`} onSubmit={(e) => handleEdit(e)}>
                             <h3 className='fs-5 align-self-center mb-2'>Editar</h3>
+                            <label htmlFor='email'>E-mail</label>
+                            <input
+                                type='text'
+                                name='email'
+                                className={`${styles.input} text-light`}
+                                value={selectedBarber?.email}
+                                disabled />
                             <label htmlFor='name'>Nome</label>
                             <input
                                 type='text'
                                 name='name'
-                                className='mb-2'
+                                className={styles.input}
                                 value={selectedBarber?.name}
                                 onChange={(e) => setSelectedBarber(prev => ({ ...prev, name: e.target.value }))} />
                             <label htmlFor='phone'>Telefone</label>
                             <input
                                 type='text'
                                 name='phone'
-                                className='mb-2'
+                                className={styles.input}
                                 value={selectedBarber?.phoneNumber}
                                 onChange={(e) => setSelectedBarber(prev => ({ ...prev, phoneNumber: e.target.value }))} />
-                            <label htmlFor='email'>E-mail</label>
-                            <input
-                                type='text'
-                                name='email'
-                                className='mb-2'
-                                value={selectedBarber?.email}
-                                disabled />
                             <div className='d-flex justify-content-around mt-4'>
                                 <button className='btn btn-success w-25' type='submit'>Sim</button>
-                                <button className='btn btn-danger w-25' onClick={() => setIsEdit(false)}>Não</button>
+                                <button className='btn btn-danger w-25' onClick={() => handleSettingsClose("edit")}>Não</button>
                             </div>
                         </form>
                     </div>

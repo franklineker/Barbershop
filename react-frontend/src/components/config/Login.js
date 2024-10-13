@@ -24,7 +24,6 @@ export default function Login() {
         const code = seachParams.get("code");
         const codeDecoded = decodeURIComponent(code);
         const codeVerifier = localStorage.getItem("codeVerifier");
-        console.log("verifier on login ==> ", codeVerifier)
 
         const body = new URLSearchParams();
         body.set("grant_type", GRANT_TYPE);

@@ -5,7 +5,7 @@
 aside {
     background-color: #020430;
     height: 100vh;
-    width: 15%;
+    width: 15vw;
     color: #fff;
 }
 
@@ -76,6 +76,7 @@ header a {
 
 main {
     height: 88vh;
+    width: 100%;
     overflow-wrap: anywhere;
     background-color: #efefef;
     padding: 2vh;
@@ -93,7 +94,7 @@ footer {
 }
 
 .block2 {
-    width: 85%;
+    width: 85vw;
 }
 
 #loginButton {

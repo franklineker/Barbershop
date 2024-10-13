@@ -35,20 +35,20 @@ public class BarberMapper {
                 .build() : null;
     }
 
-    public static Barber toBarberUpdate(UpdateBarberRequestDto requestDto, Barber currentBarber) {
+    public static Barber toBarberUpdate(UpdateBarberRequestDto requestDto, Barber barber) {
 
-        System.out.println(currentBarber.toString());
+        System.out.println(barber.toString());
         if (requestDto.getName() != null) {
-            currentBarber.setName(requestDto.getName());
+            barber.setName(requestDto.getName());
         }
         if (requestDto.getPhoneNumber() != null) {
-            currentBarber.setPhoneNumber(requestDto.getPhoneNumber());
+            barber.setPhoneNumber(requestDto.getPhoneNumber());
         }
         if (requestDto.getStatusCode() != null) {
-            currentBarber.setStatus(BarberStatus.ofCode(requestDto.getStatusCode()).getDescription());
+            barber.setStatus(BarberStatus.ofCode(requestDto.getStatusCode()).getDescription());
         }
 
-        return currentBarber;
+        return barber;
     }
 
     public static BarberResponseDto toBarberResponseDto(Barber barber) {

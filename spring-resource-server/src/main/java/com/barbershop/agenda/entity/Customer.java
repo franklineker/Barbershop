@@ -20,5 +20,5 @@ public class Customer extends Person{
 
     @JsonProperty("isAdult")
     @Column(name = "is_adult")
-    private boolean isAdult;
+    private Boolean isAdult;
 }
