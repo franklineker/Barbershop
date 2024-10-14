@@ -22,4 +22,11 @@ public enum OrderStatus {
                 .findAny()
                 .orElse(null);
     }
+
+    public static OrderStatus ofDescripton(String description) {
+        return Stream.of(values())
+                .filter(status -> Objects.equals(description, status.description))
+                .findAny()
+                .orElse(null);
+    }
 }

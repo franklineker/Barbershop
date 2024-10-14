@@ -12,7 +12,7 @@ export default function Header() {
 
     return (
         <header>
-            <img src={logo} alt="logo" style={{ width: "15vh", height: "12vh" }} />
+            <img src={logo} alt="logo" style={{ width: "12%" }} />
             <div>
                 {auth?.accessToken ?
                     <a href={env.REACT_APP_LOGOUT_URL} className="btn btn-outline-light mx-2">

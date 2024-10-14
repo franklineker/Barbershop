@@ -105,3 +105,10 @@ footer {
 #loginButton:hover {
     background-color: #040970;
 }
+
+/* .menu {
+    display: flex;
+    align-items: center;
+    border-radius: 0.4rem;
+    border: solid 2px white;
+} */

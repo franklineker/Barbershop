@@ -1,18 +1,19 @@
 package com.barbershop.agenda.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.Set;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
+@Builder
 public class CustomerResponseDto {
 
+    private Integer id;
     private String email;
     private String name;
     private String phoneNumber;
-    private Integer isAdult;
+    private Boolean isAdult;
 }

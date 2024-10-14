@@ -1,7 +1,7 @@
 package com.barbershop.agenda.mapper;
 
 import com.barbershop.agenda.dto.CustomerCreateRequestDto;
-import com.barbershop.agenda.dto.CustomerResponse;
+import com.barbershop.agenda.dto.CustomerResponseDto;
 import com.barbershop.agenda.dto.CustomerUpdateRequestDto;
 import com.barbershop.agenda.entity.Customer;
 import com.barbershop.agenda.enums.UserRole;
@@ -45,8 +45,8 @@ public class CustomerMapper {
         return customer;
     }
 
-    public static CustomerResponse toCustomerResponse(Customer customer) {
-        return customer != null ? CustomerResponse.builder()
+    public static CustomerResponseDto toCustomerResponse(Customer customer) {
+        return customer != null ? CustomerResponseDto.builder()
                 .id(customer.getId())
                 .email(customer.getEmail())
                 .name(customer.getName())
