@@ -2,6 +2,7 @@ package com.barbershop.agenda.controller;
 
 import com.barbershop.agenda.dto.OrderCreateRequestDto;
 import com.barbershop.agenda.dto.OrderResponseDto;
+import com.barbershop.agenda.dto.OrderUpdateRequestDto;
 import com.barbershop.agenda.mapper.OrderMapper;
 import com.barbershop.agenda.service.OrderService;
 import lombok.AllArgsConstructor;
@@ -30,5 +31,11 @@ public class OrderController {
     public ResponseEntity<List<OrderResponseDto>> findAllOrders() {
         List<OrderResponseDto> orderResponseDto = orderService.findAll();
         return ResponseEntity.ok(orderResponseDto);
+    }
+
+    @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<OrderResponseDto> updateOrder(@RequestBody OrderUpdateRequestDto dto) {
+        OrderResponseDto responseDto = orderService.updateOrder(dto);
+        return ResponseEntity.ok(responseDto);
     }
 }

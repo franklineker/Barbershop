@@ -180,7 +180,7 @@ export default function Customer() {
                                     key={row.original.id}
                                 >
                                     {row.cells.map((cell, cellIndex) => (
-                                        (cellIndex !== 4 ?
+                                        (cellIndex !== row.cells.length - 1 ?
                                             <td
                                                 className='p-2 fw-bold'
                                                 {...cell.getCellProps()}

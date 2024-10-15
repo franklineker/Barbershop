@@ -2,6 +2,7 @@ package com.barbershop.agenda.mapper;
 
 import com.barbershop.agenda.dto.OrderCreateRequestDto;
 import com.barbershop.agenda.dto.OrderResponseDto;
+import com.barbershop.agenda.dto.OrderUpdateRequestDto;
 import com.barbershop.agenda.entity.Barber;
 import com.barbershop.agenda.entity.Customer;
 import com.barbershop.agenda.entity.Order;

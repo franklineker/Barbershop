@@ -102,7 +102,18 @@
     font-size: 0.8rem;
 }
 
-.addButton:hover {
+.availabilityButton {
+    background-color: #020430;
+    color: white;
+    width: 7.5rem;
+    margin-right: 1.1rem;
+    margin-bottom: 0.5rem;
+    align-self: end;
+    font-size: 0.8rem;
+}
+
+.addButton:hover,
+.availabilityButton:hover {
     background-color: #020430;
     color: white;
     font-weight: bolder;
@@ -123,4 +134,20 @@
     position: sticky;
     top: 0;
     z-index: 8;
+}
+
+.calendar {
+    position: fixed;
+    left: 43%;
+    background-color: #cfd0d1;
+    border: solid 2px black;
+    border-radius: 0.5rem;
+    width: 30vw;
+    color: black
+}
+
+.hoursContainer {
+    position: fixed;
+    left: 43%;
+    width: 30vw
 }
