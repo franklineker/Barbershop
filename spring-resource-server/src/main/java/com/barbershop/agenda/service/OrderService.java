@@ -61,6 +61,7 @@ public class OrderService {
             order.setStatus(OrderStatus.ofCode(dto.getStatusCode()).getDescription());
         }
 
+        orderRepository.save(order);
         return OrderMapper.toOrderResponseDto(order);
     }
 }

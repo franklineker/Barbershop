@@ -57,8 +57,9 @@
 
 .settingsContainer {
     position: fixed;
-    z-index: 9;
+    z-index: 7;
     left: 43%;
+    top: 15%;
     margin-bottom: 3rem;
     display: flex;
     justify-content: center;
@@ -138,16 +139,15 @@
 
 .calendar {
     position: fixed;
-    left: 43%;
+    left: 46%;
     background-color: #cfd0d1;
     border: solid 2px black;
+    width: 25vw;
     border-radius: 0.5rem;
-    width: 30vw;
     color: black
 }
 
 .hoursContainer {
-    position: fixed;
-    left: 43%;
-    width: 30vw
+    position: relative;
+    width: 25vw
 }

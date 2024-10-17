@@ -11,6 +11,7 @@ import 'react-calendar/dist/Calendar.css';
 
 const ORDERS_URI = "/order";
 const BARBERS_URI = "/barber";
+const AVAILABILITY_URI = "/availability/1";
 var HOURS = [
     "00:00", "00:30", "01:00", "01:30", "02:00", "02:30", "03:00", "03:30",
     "04:00", "04:30", "05:00", "05:30", "06:00", "06:30", "07:00", "07:30",
@@ -30,17 +31,17 @@ export default function Agenda() {
         barberId: null,
         date: null
     });
-    console.log(orderToUpdate);
 
 
     const [barbers, setBarbers] = useState([]);
-    const [date, setDate] = useState(null);
-    const [hour, setHour] = useState(null);
+    const [selectedhour, setselectedHour] = useState(null);
+    const [selectedDate, setSelectedDate] = useState(null);
+    const [availability, setAvailability] = useState(null);
 
     const [isFormOpen, setIsFormOpen] = useState();
     const [isDelete, setIsDelete] = useState();
     const [isEdit, setIsEdit] = useState();
-    const [deleteSuccess, setDeleteSuccess] = useState(false);
+    const [deleteSuccess, setDeleteSuccess] = useState(false);//dfsdaf
     const [editSuccess, setEditSuccess] = useState(false);
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [isHoursOpen, setIsHoursOpen] = useState(false);
@@ -60,7 +61,7 @@ export default function Agenda() {
         },
         {
             Header: "Data",
-            accessor: "date"
+            accessor: "dateToDisplay"
         },
         {
             Header: "Hora",
@@ -80,8 +81,13 @@ export default function Agenda() {
         let date = new Date(order.date);
         let day = date.getDate().toString().length === 1 ? `0${date.getDate()}` : date.getDate();
         let month = (date.getMonth() + 1).toString().length === 1 ? `0${date.getMonth() + 1}` : date.getMonth() + 1;
-        const formatDate = `${day}-${month}-${date.getFullYear()}`;
-        const hour = date.getHours() + ":" + date.getMinutes();
+        const dateToDisplay = `${day}-${month}-${date.getFullYear()}`;
+        const dateToSave = `${date.getFullYear()}-${month}-${day}`;
+        const hour = (
+            (date.getHours().toString().length === 1 ? `0${date.getHours()}` : date.getHours()) +
+            ":" +
+            (date.getMinutes().toString().length === 1 ? `0${date.getMinutes()}` : date.getMinutes())
+        );
         return ({
             ...order,
             isSelected: false,
@@ -89,7 +95,8 @@ export default function Agenda() {
             customer: order.customer.name,
             status,
             hour,
-            date: formatDate
+            dateToSave,
+            dateToDisplay
         })
     }), [orders])
     const table = useTable({ columns, data });
@@ -100,7 +107,6 @@ export default function Agenda() {
             const response = await privateResourceAxios.get(ORDERS_URI);
             setOrders(response?.data);
         } catch (error) {
-            console.log(error);
         }
     }
 
@@ -109,7 +115,26 @@ export default function Agenda() {
             const response = await privateResourceAxios.get(BARBERS_URI);
             setBarbers(response.data);
         } catch (error) {
-            console.log(error);
+        }
+    }
+
+    const getAvailabiliy = async () => {
+        try {
+            const response = await privateResourceAxios.get(AVAILABILITY_URI);
+            const [startHours, startMinutes] = response?.data?.start.split(":");
+            const [endHours, endMinutes] = response?.data?.end.split(":");
+            const currentAvailability = {
+                id: response.data.id,
+                start: `${startHours}:${startMinutes}`,
+                end: `${endHours}:${endMinutes}`
+            }
+            const startSliceIndex = HOURS.indexOf(currentAvailability.start);
+            const endSliceIndex = HOURS.indexOf(currentAvailability.end);
+
+            HOURS = HOURS.slice(startSliceIndex, endSliceIndex + 1);
+
+            setAvailability(currentAvailability);
+        } catch (error) {
         }
     }
 
@@ -121,6 +146,13 @@ export default function Agenda() {
     const handleAvailabilityEnd = (endSlice) => {
         const end = HOURS.indexOf(endSlice);
         HOURS = HOURS.slice(end);
+    }
+
+    const handleSaveAvailability = async () => {
+        // try {
+        //     const response = await privateResourceAxios.put(AVAILABILITY_URI,)
+        // } catch (error) {
+        // }
     }
 
     const handleSettingsClose = (type) => {
@@ -142,7 +174,6 @@ export default function Agenda() {
         setSelectedOrder(order);
         setOrderToUpdate(prev => ({ ...prev, id: order.id }))
     }
-    console.log(selectedOrder);
 
     const handleDeleteWarning = (index) => {
         handleSelectedOrder(index);
@@ -158,8 +189,7 @@ export default function Agenda() {
 
     const handleOrderBarberToUpdate = (barberId) => {
         const barber = barbers.find(barber => barber.id === Number.parseInt(barberId));
-        setOrderToUpdate(prev => ({ ...prev, barberId: barberId }))
-        setSelectedOrder((prev) => ({ ...prev, barber: barber.name }));
+        setSelectedOrder((prev) => ({ ...prev, barber: barber.name, barberId: barberId }));
     }
 
     const handleSelectedDate = (value, event) => {
@@ -167,20 +197,35 @@ export default function Agenda() {
         const newDate = new Date(value);
         let day = newDate.getDate().toString().length === 1 ? `0${newDate.getDate()}` : newDate.getDate();
         let month = (newDate.getMonth() + 1).toString().length === 1 ? `0${newDate.getMonth() + 1}` : newDate.getMonth() + 1;
-        const formatDate = `${day}-${month}-${newDate.getFullYear()}`;
-        setSelectedOrder(prev => ({ ...prev, date: formatDate }))
-        setDate(newDate.toISOString());
+        const dateToDisplay = `${day}-${month}-${newDate.getFullYear()}`;
+        const dateToSave = `${newDate.getFullYear()}-${month}-${day}`;
+
+        setSelectedDate(dateToDisplay);
+        setSelectedOrder(prev => ({ ...prev, date: dateToSave }))
+    }
+
+    const handleSelectedHour = (hour) => {
+        setselectedHour(hour);
+        setSelectedOrder(prev => ({ ...prev, hour }))
+        setIsHoursOpen(false);
     }
 
     const handleEdit = async (event) => {
         event.preventDefault();
+        const date = `${selectedOrder.dateToSave}T${selectedOrder.hour}:00Z`;
+        const orderToUpdate = {
+            id: selectedOrder.id,
+            barberId: Number.parseInt(selectedOrder.barberId),
+            date: date,
+            statusCode: selectedOrder.statusCode
+        }
+        console.log(orderToUpdate)
         try {
-            console.log("update => ", selectedOrder)
-            await privateResourceAxios.put(ORDERS_URI, selectedOrder);
+            const response = await privateResourceAxios.put(ORDERS_URI, orderToUpdate);
+            console.log(response)
             setIsEdit(false);
             setEditSuccess(true);
         } catch (error) {
-            console.log(error);
         }
     }
 
@@ -190,17 +235,20 @@ export default function Agenda() {
             setIsDelete(false);
             setDeleteSuccess(true);
         } catch (error) {
-            console.log(error);
         }
     }
 
     useEffect(() => {
         getOrders();
-    }, [incToGetOrders])
+    }, [incToGetOrders]);
 
     useEffect(() => {
         getBarbers();
-    }, [])
+    }, []);
+
+    useEffect(() => {
+        getAvailabiliy();
+    }, []);
 
     return (
         <section className={styles.container}>
@@ -210,18 +258,11 @@ export default function Agenda() {
                 >
                     Agenda
                 </h1>
-                <div>
-                    <button
-                        onClick={(e) => setIsAvailabilityOpen(true)}
-                        className={`${styles.availabilityButton} btn btn-sm`}>
-                        Disponibilidade
-                    </button>
-                    <button
-                        onClick={(e) => setIsFormOpen(true)}
-                        className={`${styles.addButton} btn btn-sm`}>
-                        Novo +
-                    </button>
-                </div>
+                <button
+                    onClick={(e) => setIsAvailabilityOpen(true)}
+                    className={`${styles.availabilityButton} btn btn-sm`}>
+                    Disponibilidade
+                </button>
             </div>
             <div className={styles.tableContainer}>
                 <table style={{ width: "100%" }} {...table.getTableProps()}>
@@ -375,7 +416,7 @@ export default function Agenda() {
                                 value={selectedOrder?.barber}
                                 onChange={(e) => handleOrderBarberToUpdate(e.target.value)}
                             >
-                                <option defaultValue={selectedOrder.barber}>{selectedOrder.barber}</option>
+                                <option defaultChecked>{selectedOrder.barber}</option>
                                 {barbers.map(barber => (
                                     <option key={barber.id} value={barber.id}>
                                         {barber.name}
@@ -383,27 +424,27 @@ export default function Agenda() {
                                 ))}
                             </select>
                             <label>Data</label>
+                            <select className={styles.input} onClick={() => setIsCalendarOpen(true)}>
+                                {isCalendarOpen ?
+                                    null
+                                    :
+                                    <option>{selectedOrder.dateToDisplay}</option>
+                                }
+                            </select>
                             {isCalendarOpen ?
                                 <div>
                                     <Calendar className={styles.calendar} onClickDay={(value, event) => handleSelectedDate(value, event)} />
                                 </div>
                                 :
-                                <select className={styles.input} onClick={() => setIsCalendarOpen(true)}>
-                                    <option>{selectedOrder.date}</option>
-                                </select>
+                                null
                             }
                             <label>Hora</label>
-                            {isHoursOpen ?
-                                <div className={styles.hoursContainer}>
-                                    {HOURS.map(hour => (
-                                        <button className='btn btn-warning border border-2 border-dark fw-bold'>{hour}</button>
-                                    ))}
-                                </div>
-                                :
-                                <select className={styles.input} onClick={() => setIsHoursOpen(true)}>
-                                    <option>{selectedOrder.hour}</option>
-                                </select>
-                            }
+                            <select className={styles.input} onChange={(e) => handleSelectedHour(e.target.value)}>
+                                <option defaultChecked>{selectedOrder.hour}</option>
+                                {HOURS.map(hour => (
+                                    <option key={hour} value={hour}>{hour}</option>
+                                ))}
+                            </select>
                             <div className='d-flex justify-content-around mt-4'>
                                 <button className='btn btn-success w-25' type='submit'>Sim</button>
                                 <button className='btn btn-danger w-25' onClick={() => handleSettingsClose("edit")}>Não</button>
@@ -420,13 +461,13 @@ export default function Agenda() {
                         <label>Selecione o início</label>
                         <select className={styles.input} onChange={(e) => handleAvailabilityStart(e.target.value)}>
                             {HOURS.map(hour => (
-                                <option key={hour} value={hour}>{hour}</option>
+                                <option key={hour} value={hour}>{availability.start}</option>
                             ))}
                         </select>
                         <label>Selecione o fim</label>
                         <select className={styles.input} onChange={(e) => handleAvailabilityEnd(e.target.value)}>
                             {HOURS.map(hour => (
-                                <option key={hour} value={hour}>{hour}</option>
+                                <option key={hour} value={hour}>{availability.end}</option>
                             ))}
                         </select>
                         <button onClick={e => { e.preventDefault(); setIsAvailabilityOpen(false) }}>Salvar</button>
