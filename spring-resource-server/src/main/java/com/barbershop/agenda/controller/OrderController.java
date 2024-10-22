@@ -38,4 +38,10 @@ public class OrderController {
         OrderResponseDto responseDto = orderService.updateOrder(dto);
         return ResponseEntity.ok(responseDto);
     }
+
+    @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<OrderResponseDto> deleteOrder(@PathVariable String id) {
+        OrderResponseDto responseDto = orderService.deleteOrder(Integer.parseInt(id));
+        return ResponseEntity.ok(responseDto);
+    }
 }

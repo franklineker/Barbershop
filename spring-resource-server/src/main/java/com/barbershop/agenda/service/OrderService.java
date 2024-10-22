@@ -46,8 +46,7 @@ public class OrderService {
     }
 
     public OrderResponseDto updateOrder(OrderUpdateRequestDto dto) {
-        Order order = orderRepository.findById(dto.getId())
-                .orElseThrow(() -> new AppEntityNotFoundException("Order not found"));
+        Order order = checkOrderExists(dto.getId());
 
         if(dto.getBarberId() != null && dto.getBarberId() != order.getBarber().getId()) {
             Barber barber = barberRepository.findById(dto.getBarberId())
@@ -64,4 +63,17 @@ public class OrderService {
         orderRepository.save(order);
         return OrderMapper.toOrderResponseDto(order);
     }
+
+    public OrderResponseDto deleteOrder(Integer id) {
+        Order order = checkOrderExists(id);
+        orderRepository.deleteById(order.getId());
+        return OrderMapper.toOrderResponseDto(order);
+    }
+
+    private Order checkOrderExists(Integer id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new AppEntityNotFoundException("Order not found"));
+        return order;
+    }
+
 }

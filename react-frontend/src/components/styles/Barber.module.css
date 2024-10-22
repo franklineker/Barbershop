@@ -11,7 +11,7 @@
 .container {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    padding-top: 2rem;
     width: 100%;
     height: 85vh
 }
@@ -19,14 +19,15 @@
 .tableContainer {
     display: flex;
     flex-direction: column;
-    height: 70vh;
+    max-height: 70vh;
     overflow-y: scroll;
     font-size: 0.8rem;
+    border-radius: 5px;
 }
 
 .tableHeader {
     background-color: #020430;
-    color: white
+    color: white;
 }
 
 .tableBody {
@@ -57,7 +58,7 @@
 
 .settingsContainer {
     position: fixed;
-    z-index: 7;
+    z-index: 10;
     left: 43%;
     top: 15%;
     margin-bottom: 3rem;
@@ -79,7 +80,7 @@
     width: 100%;
 }
 
-.editSuccess {
+.success {
     position: absolute;
     display: flex;
     flex-direction: column;
@@ -150,4 +151,30 @@
 .hoursContainer {
     position: relative;
     width: 25vw
+}
+
+.pointer:hover {
+    cursor: pointer;
+}
+
+.pending {
+    background-color: #f7c7c7;
+    padding: 1px 7px;
+    border-radius: 0.3rem;
+    color: black;
+    border: solid 0.1px;
+    width: 80%;
+    display: block;
+    text-align: center;
+}
+
+.completed {
+    background-color: #c4f7c4;
+    padding: 1px 7px;
+    border-radius: 0.3rem;
+    color: black;
+    border: solid 0.1px;
+    width: 80%;
+    display: block;
+    text-align: center;
 }

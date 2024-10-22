@@ -197,7 +197,15 @@ export default function Barber() {
                                                 {...cell.getCellProps()}
                                                 key={cellIndex}
                                             >
-                                                {cell.render("Cell")}
+                                                <span
+                                                    className={
+                                                        cell.column.id === 'statusDescription' ? (
+                                                            cell.value === 'Ativo' ? styles.completed : styles.pending
+                                                        ) : ''
+                                                    }
+                                                >
+                                                    {cell.render("Cell")}
+                                                </span>
                                             </td>
                                             :
                                             <td className='d-flex py-2 justify-content-end' key={cellIndex}>

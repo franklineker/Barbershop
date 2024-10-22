@@ -7,12 +7,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faPencil, faTrash } from '@fortawesome/free-solid-svg-icons';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
+import { useSortBy } from 'react-table';
 
 
 const ORDERS_URI = "/order";
 const BARBERS_URI = "/barber";
-const AVAILABILITY_URI = "/availability/1";
-var HOURS = [
+const AVAILABILITY_URI = "/availability";
+const HOURS = [
     "00:00", "00:30", "01:00", "01:30", "02:00", "02:30", "03:00", "03:30",
     "04:00", "04:30", "05:00", "05:30", "06:00", "06:30", "07:00", "07:30",
     "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
@@ -26,26 +27,17 @@ export default function Agenda() {
     const [orders, setOrders] = useState([]);
     const [incToGetOrders, setIncToGetOrders] = useState(0);
     const [selectedOrder, setSelectedOrder] = useState(null);
-    const [orderToUpdate, setOrderToUpdate] = useState({
-        id: null,
-        barberId: null,
-        date: null
-    });
 
 
     const [barbers, setBarbers] = useState([]);
-    const [selectedhour, setselectedHour] = useState(null);
-    const [selectedDate, setSelectedDate] = useState(null);
     const [availability, setAvailability] = useState(null);
 
-    const [isFormOpen, setIsFormOpen] = useState();
-    const [isDelete, setIsDelete] = useState();
-    const [isEdit, setIsEdit] = useState();
-    const [deleteSuccess, setDeleteSuccess] = useState(false);//dfsdaf
-    const [editSuccess, setEditSuccess] = useState(false);
+    const [isDelete, setIsDelete] = useState(false);
+    const [isEdit, setIsEdit] = useState(false);
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-    const [isHoursOpen, setIsHoursOpen] = useState(false);
     const [isAvailabilityOpen, setIsAvailabilityOpen] = useState(false);
+    const [success, setSuccess] = useState(false);
+    const [isSaveButtonEnabled, setIsSaveButtonEnabled] = useState(false);
 
 
     const privateResourceAxios = usePrivateResourceAxios();
@@ -76,6 +68,7 @@ export default function Agenda() {
             accessor: "config"
         }
     ], []);
+
     const data = useMemo(() => orders.map(order => {
         const status = order.statusCode === 2000 ? "Pendente" : "Concluído";
         let date = new Date(order.date);
@@ -99,7 +92,19 @@ export default function Agenda() {
             dateToDisplay
         })
     }), [orders])
-    const table = useTable({ columns, data });
+
+    const table = useTable({
+        columns,
+        data,
+        initialState: {
+            sortBy: [
+                {
+                    id: 'status'
+                }
+            ]
+        }
+    }, useSortBy);
+    console.log(table)
 
     const getOrders = async () => {
 
@@ -120,7 +125,7 @@ export default function Agenda() {
 
     const getAvailabiliy = async () => {
         try {
-            const response = await privateResourceAxios.get(AVAILABILITY_URI);
+            const response = await privateResourceAxios.get(AVAILABILITY_URI + "/1");
             const [startHours, startMinutes] = response?.data?.start.split(":");
             const [endHours, endMinutes] = response?.data?.end.split(":");
             const currentAvailability = {
@@ -128,51 +133,40 @@ export default function Agenda() {
                 start: `${startHours}:${startMinutes}`,
                 end: `${endHours}:${endMinutes}`
             }
-            const startSliceIndex = HOURS.indexOf(currentAvailability.start);
-            const endSliceIndex = HOURS.indexOf(currentAvailability.end);
-
-            HOURS = HOURS.slice(startSliceIndex, endSliceIndex + 1);
-
             setAvailability(currentAvailability);
         } catch (error) {
         }
     }
 
-    const handleAvailabilityStart = (startSlice) => {
-        const start = HOURS.indexOf(startSlice);
-        HOURS = HOURS.slice(start);
-    }
+    const handleSaveAvailability = async (e) => {
+        e.preventDefault();
 
-    const handleAvailabilityEnd = (endSlice) => {
-        const end = HOURS.indexOf(endSlice);
-        HOURS = HOURS.slice(end);
-    }
-
-    const handleSaveAvailability = async () => {
-        // try {
-        //     const response = await privateResourceAxios.put(AVAILABILITY_URI,)
-        // } catch (error) {
-        // }
+        try {
+            await privateResourceAxios.put(AVAILABILITY_URI, availability);
+            setIsAvailabilityOpen(false);
+            setIsSaveButtonEnabled(false);
+            setSuccess(true);
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     const handleSettingsClose = (type) => {
-        if (type === "edit") {
+        if (type === "editCancel") {
             setIsEdit(false);
-        } else if (type === "editSuccess") {
-            setEditSuccess(false);
-        } else if (type === "delete") {
+        } else if (type === "deleteCancel") {
             setIsDelete(false);
-        } else if (type === "deleteSuccess") {
-            setDeleteSuccess(false);
+        } else if ("success") {
+            setIncToGetOrders(prev => prev + 1);
         }
-        setIncToGetOrders(prev => prev + 1);
+
+        setSuccess(false);
     }
 
     const handleSelectedOrder = (index) => {
         let order = data.find((current, currentIndex) => currentIndex === index);
         order.isSelected = order.isSelected ? false : true;
         setSelectedOrder(order);
-        setOrderToUpdate(prev => ({ ...prev, id: order.id }))
     }
 
     const handleDeleteWarning = (index) => {
@@ -192,7 +186,7 @@ export default function Agenda() {
         setSelectedOrder((prev) => ({ ...prev, barber: barber.name, barberId: barberId }));
     }
 
-    const handleSelectedDate = (value, event) => {
+    const handleSelectedDate = (value) => {
         setIsCalendarOpen(false);
         const newDate = new Date(value);
         let day = newDate.getDate().toString().length === 1 ? `0${newDate.getDate()}` : newDate.getDate();
@@ -200,17 +194,10 @@ export default function Agenda() {
         const dateToDisplay = `${day}-${month}-${newDate.getFullYear()}`;
         const dateToSave = `${newDate.getFullYear()}-${month}-${day}`;
 
-        setSelectedDate(dateToDisplay);
-        setSelectedOrder(prev => ({ ...prev, date: dateToSave }))
+        setSelectedOrder(prev => ({ ...prev, dateToSave, dateToDisplay }))
     }
 
-    const handleSelectedHour = (hour) => {
-        setselectedHour(hour);
-        setSelectedOrder(prev => ({ ...prev, hour }))
-        setIsHoursOpen(false);
-    }
-
-    const handleEdit = async (event) => {
+    const handleOrderUpdate = async (event) => {
         event.preventDefault();
         const date = `${selectedOrder.dateToSave}T${selectedOrder.hour}:00Z`;
         const orderToUpdate = {
@@ -219,12 +206,11 @@ export default function Agenda() {
             date: date,
             statusCode: selectedOrder.statusCode
         }
-        console.log(orderToUpdate)
         try {
             const response = await privateResourceAxios.put(ORDERS_URI, orderToUpdate);
             console.log(response)
             setIsEdit(false);
-            setEditSuccess(true);
+            setSuccess(true);
         } catch (error) {
         }
     }
@@ -233,20 +219,24 @@ export default function Agenda() {
         try {
             await privateResourceAxios.delete(`${ORDERS_URI}/${selectedOrder.id}`);
             setIsDelete(false);
-            setDeleteSuccess(true);
+            setSuccess(true);
         } catch (error) {
+            console.log(error);
         }
     }
 
     useEffect(() => {
         getOrders();
+        console.log("get orders...")
     }, [incToGetOrders]);
 
     useEffect(() => {
+        console.log("get barbers...")
         getBarbers();
     }, []);
 
     useEffect(() => {
+        console.log("get availability...")
         getAvailabiliy();
     }, []);
 
@@ -268,14 +258,16 @@ export default function Agenda() {
                 <table style={{ width: "100%" }} {...table.getTableProps()}>
                     <thead style={{ width: "100%" }} key={1}>
                         {table.headerGroups.map(headerGroup => (
-                            <tr className={styles.tableHeader} {...headerGroup.getHeaderGroupProps()} key={1}>
-                                {headerGroup.headers.map(column => (
+                            <tr className={`${styles.tableHeader}`} {...headerGroup.getHeaderGroupProps()} key={1}>
+                                {headerGroup.headers.map((column, colIndex) => (
                                     <th
-                                        className='p-2'
-                                        {...column.getHeaderProps()}
+                                        className={`${column.id === 'status' ? 'px-3' : 'p-2'}`}
+                                        {...column.getHeaderProps(column.getSortByToggleProps())}
                                         key={column.id}
                                     >
-                                        {column.render("Header")}
+                                        <div className='d-flex'>
+                                            <span>{column.render("Header")}</span>
+                                        </div>
                                     </th>
                                 ))}
                             </tr>
@@ -299,14 +291,22 @@ export default function Agenda() {
                                                 {...cell.getCellProps()}
                                                 key={cellIndex}
                                             >
-                                                {cell.render("Cell")}
+                                                <span
+                                                    className={
+                                                        cell.column.id === 'status' ? (
+                                                            cell.value === 'Concluído' ? styles.completed : styles.pending
+                                                        ) : ''
+                                                    }
+                                                >
+                                                    {cell.render("Cell")}
+                                                </span>
                                             </td>
                                             :
                                             <td className='d-flex py-2 justify-content-end' key={cellIndex}>
                                                 <FontAwesomeIcon
                                                     type='button'
                                                     icon={faPencil}
-                                                    className={isFormOpen || isDelete || isEdit || editSuccess || deleteSuccess
+                                                    className={isDelete || isEdit || success
                                                         ?
                                                         styles.offscreen
                                                         :
@@ -317,7 +317,7 @@ export default function Agenda() {
                                                 <FontAwesomeIcon
                                                     type='button'
                                                     icon={faTrash}
-                                                    className={isFormOpen || isDelete || isEdit || editSuccess || deleteSuccess
+                                                    className={isDelete || isEdit || success
                                                         ? styles.offscreen
                                                         :
                                                         (`${styles.settingsButton} ${styles.trashButton} mx-2`)
@@ -332,32 +332,17 @@ export default function Agenda() {
                     </tbody>
                 </table>
             </div>
-            {/* if necessary, create a form to save an appointment. The idea is that appointments should be make from customer's end.
             {
-                isFormOpen
-                    ?
-                    <div className={styles.formContainer}>
-                        <form>
-                            <h3>Criar agendamento</h3>
-                            <label>Cliente</label>
-                            <select>
-                                
-                            </select>
-                        </form>
-                    </div>
-                    :
-                    null
-            } */}
-            {
-                deleteSuccess ?
-                    <div className={`${styles.editSuccess}`}>
+                success ?
+
+                    <div className={`${styles.success}`}>
                         <FontAwesomeIcon icon={faCheckCircle} className='text-success fs-5 mx-2 mb-1' />
                         <span className='fs-6'>
-                            Excluído!
+                            {isDelete ? 'Exculído!' : 'Salvo!'}
                         </span><br />
                         <button
                             className='btn btn-sm btn-light w-50'
-                            onClick={() => handleSettingsClose("deleteSuccess")}
+                            onClick={() => handleSettingsClose("success")}
                         >
                             Fechar
                         </button>
@@ -374,7 +359,7 @@ export default function Agenda() {
                             </h3>
                             <div className='d-flex justify-content-around'>
                                 <button className='btn btn-success w-25' onClick={handleDelete}>Sim</button>
-                                <button className='btn btn-danger w-25' onClick={() => handleSettingsClose("delete")}>Não</button>
+                                <button className='btn btn-danger w-25' onClick={() => handleSettingsClose("deleteCancel")}>Não</button>
                             </div>
                         </div>
                     </div>
@@ -382,26 +367,9 @@ export default function Agenda() {
                     null
             }
             {
-                editSuccess ?
-                    <div className={`${styles.editSuccess}`}>
-                        <FontAwesomeIcon icon={faCheckCircle} className='text-success fs-5 mx-2 mb-1' />
-                        <span className='fs-6'>
-                            Salvo!
-                        </span><br />
-                        <button
-                            className='btn btn-sm btn-light w-50'
-                            onClick={() => handleSettingsClose("editSuccess")}
-                        >
-                            Fechar
-                        </button>
-                    </div>
-                    :
-                    null
-            }
-            {
                 isEdit ?
                     <div className={`${styles.settingsContainer}`}>
-                        <form className={`${styles.edit}`} onSubmit={(e) => handleEdit(e)}>
+                        <form className={`${styles.edit}`} onSubmit={(e) => handleOrderUpdate(e)}>
                             <h3 className='fs-5 align-self-center mb-2'>Editar</h3>
                             <label htmlFor='customer'>Cliente</label>
                             <input
@@ -433,13 +401,13 @@ export default function Agenda() {
                             </select>
                             {isCalendarOpen ?
                                 <div>
-                                    <Calendar className={styles.calendar} onClickDay={(value, event) => handleSelectedDate(value, event)} />
+                                    <Calendar className={styles.calendar} onClickDay={(value) => handleSelectedDate(value)} />
                                 </div>
                                 :
                                 null
                             }
                             <label>Hora</label>
-                            <select className={styles.input} onChange={(e) => handleSelectedHour(e.target.value)}>
+                            <select className={styles.input} onChange={(e) => setSelectedOrder(prev => ({ ...prev, hour: e.target.value }))}>
                                 <option defaultChecked>{selectedOrder.hour}</option>
                                 {HOURS.map(hour => (
                                     <option key={hour} value={hour}>{hour}</option>
@@ -447,7 +415,7 @@ export default function Agenda() {
                             </select>
                             <div className='d-flex justify-content-around mt-4'>
                                 <button className='btn btn-success w-25' type='submit'>Sim</button>
-                                <button className='btn btn-danger w-25' onClick={() => handleSettingsClose("edit")}>Não</button>
+                                <button className='btn btn-danger w-25' onClick={() => handleSettingsClose("editCancel")}>Não</button>
                             </div>
                         </form>
                     </div>
@@ -456,21 +424,49 @@ export default function Agenda() {
             }
             {isAvailabilityOpen ?
                 <div className={`${styles.settingsContainer} flex-column justify-content-start`}>
-                    <form className='d-flex flex-column'>
+                    <p className={`bg-danger p-1 rounded ${availability.end <= availability.start ? '' : styles.offscreen}`}>O horário final deve ser maior que o inicial.</p>
+                    <form className='d-flex flex-column' onSubmit={(e) => handleSaveAvailability(e)}>
                         <h3 className='fs-5 mb-5'>Configurar disponibilidade</h3>
                         <label>Selecione o início</label>
-                        <select className={styles.input} onChange={(e) => handleAvailabilityStart(e.target.value)}>
+                        <select
+                            value={availability.start}
+                            className={styles.input}
+                            onChange={(e) => {
+                                setAvailability((prev) => ({ ...prev, start: e.target.value }));
+                                setIsSaveButtonEnabled(true);
+                            }}>
                             {HOURS.map(hour => (
-                                <option key={hour} value={hour}>{availability.start}</option>
+                                <option key={hour} value={hour}>{hour}</option>
                             ))}
                         </select>
                         <label>Selecione o fim</label>
-                        <select className={styles.input} onChange={(e) => handleAvailabilityEnd(e.target.value)}>
+                        <select
+                            value={availability.end}
+                            className={styles.input}
+                            onChange={(e) => {
+                                setAvailability((prev) => ({ ...prev, end: e.target.value }));
+                                setIsSaveButtonEnabled(true);
+                            }}
+                        >
                             {HOURS.map(hour => (
-                                <option key={hour} value={hour}>{availability.end}</option>
+                                <option key={hour} value={hour}>{hour}</option>
                             ))}
                         </select>
-                        <button onClick={e => { e.preventDefault(); setIsAvailabilityOpen(false) }}>Salvar</button>
+                        <div className='d-flex justify-content-around mt-4'>
+                            <button
+                                style={{ width: "7rem" }}
+                                className='btn btn-primary'
+                                type='submit'
+                                disabled={isSaveButtonEnabled && availability.start < availability.end ? false : true}>
+                                Salvar
+                            </button>
+                            <button
+                                style={{ width: "7rem" }}
+                                className='btn btn-danger'
+                                onClick={() => setIsAvailabilityOpen(false)}>
+                                Cancelar
+                            </button>
+                        </div>
                     </form>
                 </div>
                 :

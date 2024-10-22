@@ -15,7 +15,6 @@ const useRefreshToken = () => {
             const body = new URLSearchParams();
             body.set("grant_type", "refresh_token");
             body.set("refresh_token", auth?.refreshToken);
-            console.log("basic " + btoa(`${env.REACT_APP_CLIENT_ID}: ${env.REACT_APP_CLIENT_SECRET}`));
 
             const response = await authAxios.post(env.REACT_APP_TOKEN_URL, body,
                 {
