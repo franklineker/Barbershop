@@ -20,8 +20,7 @@ export default function Barber() {
     const [isFormOpen, setIsFormOpen] = useState();
     const [isDelete, setIsDelete] = useState();
     const [isEdit, setIsEdit] = useState();
-    const [deleteSuccess, setDeleteSuccess] = useState(false);
-    const [editSuccess, setEditSuccess] = useState(false);
+    const [success, setSuccess] = useState(false);
 
     const privateResourceAxios = usePrivateResourceAxios();
 
@@ -80,17 +79,15 @@ export default function Barber() {
     }
 
     const handleSettingsClose = (type) => {
-        if (type === "edit") {
+        if (type === "editCancel") {
             setIsEdit(false);
-        } else if (type === "editSuccess") {
-            setEditSuccess(false);
-        } else if (type === "delete") {
+        } else if (type === "deleteCancel") {
             setIsDelete(false);
-        } else if (type === "deleteSuccess") {
-            setDeleteSuccess(false);
+        } else if ("success") {
+            setIncToGetBarbers(prev => prev + 1);
         }
-        setSelectedBarber(null);
-        setIncToGetBarbers(prev => prev + 1);
+
+        setSuccess(false);
     }
 
     const handleSelectedBarber = (index) => {
@@ -118,7 +115,7 @@ export default function Barber() {
             console.log("update => ", selectedBarber)
             await privateResourceAxios.put(RESOURCE_URI, selectedBarber);
             setIsEdit(false);
-            setEditSuccess(true);
+            setSuccess(true);
         } catch (error) {
             console.log(error);
         }
@@ -130,7 +127,7 @@ export default function Barber() {
         try {
             await privateResourceAxios.delete(`${RESOURCE_URI}/${selectedBarber.id}`);
             setIsDelete(false);
-            setDeleteSuccess(true);
+            setSuccess(true);
         } catch (error) {
             console.log(error);
         }
@@ -212,7 +209,7 @@ export default function Barber() {
                                                 <FontAwesomeIcon
                                                     type='button'
                                                     icon={faPencil}
-                                                    className={isFormOpen || isDelete || isEdit || editSuccess || deleteSuccess
+                                                    className={isFormOpen || isDelete || isEdit || success
                                                         ?
                                                         styles.offscreen
                                                         :
@@ -223,7 +220,7 @@ export default function Barber() {
                                                 <FontAwesomeIcon
                                                     type='button'
                                                     icon={faTrash}
-                                                    className={isFormOpen || isDelete || isEdit || editSuccess || deleteSuccess
+                                                    className={isFormOpen || isDelete || isEdit || success
                                                         ? styles.offscreen
                                                         :
                                                         (`${styles.settingsButton} ${styles.trashButton} mx-2`)
@@ -240,6 +237,24 @@ export default function Barber() {
                 </table>
             </div>
             {
+                success ?
+
+                    <div className={`${styles.success}`}>
+                        <FontAwesomeIcon icon={faCheckCircle} className='text-success fs-5 mx-2 mb-1' />
+                        <span className='fs-6'>
+                            {isDelete ? 'Exculído!' : 'Salvo!'}
+                        </span><br />
+                        <button
+                            className='btn btn-sm btn-light w-50'
+                            onClick={() => handleSettingsClose("success")}
+                        >
+                            Fechar
+                        </button>
+                    </div>
+                    :
+                    null
+            }
+            {
                 isFormOpen ? <div className={styles.formContainer}>
                     <Register
                         parentData={{
@@ -252,30 +267,13 @@ export default function Barber() {
                 </div> : null
             }
             {
-                deleteSuccess ?
-                    <div className={`${styles.editSuccess}`}>
-                        <FontAwesomeIcon icon={faCheckCircle} className='text-success fs-5 mx-2 mb-1' />
-                        <span className='fs-6'>
-                            Excluído!
-                        </span><br />
-                        <button
-                            className='btn btn-sm btn-light w-50'
-                            onClick={() => handleSettingsClose("deleteSuccess")}
-                        >
-                            Fechar
-                        </button>
-                    </div>
-                    :
-                    null
-            }
-            {
                 isDelete ?
                     <div className={styles.settingsContainer}>
                         <div className={styles.delete}>
                             <h3 className='fs-5 mb-5 text-center'><span>Tem certeza que deseja excluir o barbeiro <strong>{selectedBarber?.name}</strong>?</span></h3>
                             <div className='d-flex justify-content-around'>
                                 <button className='btn btn-success w-25' onClick={handleDelete}>Sim</button>
-                                <button className='btn btn-danger w-25' onClick={() => handleSettingsClose("delete")}>Não</button>
+                                <button className='btn btn-danger w-25' onClick={() => handleSettingsClose("deleteCancel")}>Não</button>
                             </div>
                         </div>
                     </div>
@@ -283,26 +281,9 @@ export default function Barber() {
                     null
             }
             {
-                editSuccess ?
-                    <div className={`${styles.editSuccess}`}>
-                        <FontAwesomeIcon icon={faCheckCircle} className='text-success fs-5 mx-2 mb-1' />
-                        <span className='fs-6'>
-                            Salvo!
-                        </span><br />
-                        <button
-                            className='btn btn-sm btn-light w-50'
-                            onClick={() => handleSettingsClose("editSuccess")}
-                        >
-                            Fechar
-                        </button>
-                    </div>
-                    :
-                    null
-            }
-            {
                 isEdit ?
                     <div className={`${styles.settingsContainer}`}>
-                        <form className={`${styles.edit}`} onSubmit={(e) => handleEdit(e)}>
+                        <form className={`${styles.form}`} onSubmit={(e) => handleEdit(e)}>
                             <h3 className='fs-5 align-self-center mb-2'>Editar</h3>
                             <label htmlFor='email'>E-mail</label>
                             <input
@@ -327,7 +308,7 @@ export default function Barber() {
                                 onChange={(e) => setSelectedBarber(prev => ({ ...prev, phoneNumber: e.target.value }))} />
                             <div className='d-flex justify-content-around mt-4'>
                                 <button className='btn btn-success w-25' type='submit'>Sim</button>
-                                <button className='btn btn-danger w-25' onClick={() => handleSettingsClose("edit")}>Não</button>
+                                <button className='btn btn-danger w-25' onClick={() => handleSettingsClose("editCancel")}>Não</button>
                             </div>
                         </form>
                     </div>

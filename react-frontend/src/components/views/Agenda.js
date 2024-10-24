@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import usePrivateResourceAxios from '../../hooks/usePrivateResourceAxios';
 import { useTable } from 'react-table/dist/react-table.development';
 import styles from "../styles/Barber.module.css";
@@ -8,6 +8,8 @@ import { faCheckCircle, faPencil, faTrash } from '@fortawesome/free-solid-svg-ic
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import { useSortBy } from 'react-table';
+import useCustomers from '../../hooks/useCustomers';
+import { format } from 'date-fns';
 
 
 const ORDERS_URI = "/order";
@@ -25,15 +27,23 @@ const HOURS = [
 export default function Agenda() {
 
     const [orders, setOrders] = useState([]);
+    const [barbers, setBarbers] = useState([]);
+    const { customers } = useCustomers();
+
     const [incToGetOrders, setIncToGetOrders] = useState(0);
     const [selectedOrder, setSelectedOrder] = useState(null);
+    const [newOrder, setNewOrder] = useState({});
+    const [dateToDisplay, setDateToDisplay] = useState('');
+
+    const calendarRef = useRef(null);
+    const formCreteRef = useRef(null);
 
 
-    const [barbers, setBarbers] = useState([]);
     const [availability, setAvailability] = useState(null);
 
     const [isDelete, setIsDelete] = useState(false);
     const [isEdit, setIsEdit] = useState(false);
+    const [isCreate, setIsCreate] = useState(false);
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [isAvailabilityOpen, setIsAvailabilityOpen] = useState(false);
     const [success, setSuccess] = useState(false);
@@ -156,7 +166,10 @@ export default function Agenda() {
             setIsEdit(false);
         } else if (type === "deleteCancel") {
             setIsDelete(false);
-        } else if ("success") {
+        } else if (type === 'createCancel') {
+            setIsCreate(false);
+        }
+        else if ("success") {
             setIncToGetOrders(prev => prev + 1);
         }
 
@@ -186,13 +199,18 @@ export default function Agenda() {
         setSelectedOrder((prev) => ({ ...prev, barber: barber.name, barberId: barberId }));
     }
 
-    const handleSelectedDate = (value) => {
+    const handleSelectedDate = (value, event) => {
         setIsCalendarOpen(false);
         const newDate = new Date(value);
         let day = newDate.getDate().toString().length === 1 ? `0${newDate.getDate()}` : newDate.getDate();
         let month = (newDate.getMonth() + 1).toString().length === 1 ? `0${newDate.getMonth() + 1}` : newDate.getMonth() + 1;
         const dateToDisplay = `${day}-${month}-${newDate.getFullYear()}`;
         const dateToSave = `${newDate.getFullYear()}-${month}-${day}`;
+
+        if (formCreteRef.current.contains(event.target)) {
+            console.log("entrou no current");
+            setNewOrder(prev => ({ ...prev, date: dateToSave }))
+        }
 
         setSelectedOrder(prev => ({ ...prev, dateToSave, dateToDisplay }))
     }
@@ -225,6 +243,35 @@ export default function Agenda() {
         }
     }
 
+    const handleCreateOrder = async (e) => {
+        e.preventDefault();
+        const body = {
+            ...newOrder,
+            statusCode: 2000
+        };
+        console.log(newOrder)
+        try {
+            await privateResourceAxios.post(ORDERS_URI, body);
+            setSuccess(true);
+            setIsCreate(false);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    useEffect(() => {
+        function handleClickOutside(e) {
+            if (calendarRef.current && !calendarRef.current.contains(e.target)) {
+                setIsCalendarOpen(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        }
+    }, [calendarRef]);
+
     useEffect(() => {
         getOrders();
         console.log("get orders...")
@@ -248,11 +295,18 @@ export default function Agenda() {
                 >
                     Agenda
                 </h1>
-                <button
-                    onClick={(e) => setIsAvailabilityOpen(true)}
-                    className={`${styles.availabilityButton} btn btn-sm`}>
-                    Disponibilidade
-                </button>
+                <div>
+                    <button
+                        onClick={(e) => setIsAvailabilityOpen(true)}
+                        className={`${styles.availabilityButton} btn btn-sm`}>
+                        Disponibilidade
+                    </button>
+                    <button
+                        onClick={(e) => setIsCreate(true)}
+                        className={`${styles.availabilityButton} btn btn-sm`}>
+                        Novo +
+                    </button>
+                </div>
             </div>
             <div className={styles.tableContainer}>
                 <table style={{ width: "100%" }} {...table.getTableProps()}>
@@ -369,7 +423,7 @@ export default function Agenda() {
             {
                 isEdit ?
                     <div className={`${styles.settingsContainer}`}>
-                        <form className={`${styles.edit}`} onSubmit={(e) => handleOrderUpdate(e)}>
+                        <form className={`${styles.form}`} onSubmit={(e) => handleOrderUpdate(e)}>
                             <h3 className='fs-5 align-self-center mb-2'>Editar</h3>
                             <label htmlFor='customer'>Cliente</label>
                             <input
@@ -392,26 +446,25 @@ export default function Agenda() {
                                 ))}
                             </select>
                             <label>Data</label>
-                            <select className={styles.input} onClick={() => setIsCalendarOpen(true)}>
-                                {isCalendarOpen ?
-                                    null
-                                    :
-                                    <option>{selectedOrder.dateToDisplay}</option>
-                                }
-                            </select>
                             {isCalendarOpen ?
-                                <div>
-                                    <Calendar className={styles.calendar} onClickDay={(value) => handleSelectedDate(value)} />
+                                <div ref={calendarRef}>
+                                    <Calendar
+                                        className={styles.calendar}
+                                        onClickDay={(value, event) => handleSelectedDate(value, event)}
+                                        tileDisabled={({ activeStartDate, date, view }) => date.setHours(1) < new Date().setHours(0)} />
                                 </div>
                                 :
-                                null
+                                <select className={styles.input} onClick={() => setIsCalendarOpen(true)}>
+                                    <option>{selectedOrder.dateToDisplay}</option>
+                                </select>
                             }
                             <label>Hora</label>
                             <select className={styles.input} onChange={(e) => setSelectedOrder(prev => ({ ...prev, hour: e.target.value }))}>
-                                <option defaultChecked>{selectedOrder.hour}</option>
-                                {HOURS.map(hour => (
-                                    <option key={hour} value={hour}>{hour}</option>
-                                ))}
+                                <option defaultChecked className='bg-primary text-light'>{selectedOrder.hour}</option>
+                                {HOURS.slice(HOURS.indexOf(availability.start), HOURS.indexOf(availability.end) + 1)
+                                    .map(hour => (
+                                        <option key={hour} value={hour}>{hour}</option>
+                                    ))}
                             </select>
                             <div className='d-flex justify-content-around mt-4'>
                                 <button className='btn btn-success w-25' type='submit'>Sim</button>
@@ -422,56 +475,146 @@ export default function Agenda() {
                     :
                     null
             }
-            {isAvailabilityOpen ?
-                <div className={`${styles.settingsContainer} flex-column justify-content-start`}>
-                    <p className={`bg-danger p-1 rounded ${availability.end <= availability.start ? '' : styles.offscreen}`}>O horário final deve ser maior que o inicial.</p>
-                    <form className='d-flex flex-column' onSubmit={(e) => handleSaveAvailability(e)}>
-                        <h3 className='fs-5 mb-5'>Configurar disponibilidade</h3>
-                        <label>Selecione o início</label>
-                        <select
-                            value={availability.start}
-                            className={styles.input}
-                            onChange={(e) => {
-                                setAvailability((prev) => ({ ...prev, start: e.target.value }));
-                                setIsSaveButtonEnabled(true);
-                            }}>
-                            {HOURS.map(hour => (
-                                <option key={hour} value={hour}>{hour}</option>
-                            ))}
-                        </select>
-                        <label>Selecione o fim</label>
-                        <select
-                            value={availability.end}
-                            className={styles.input}
-                            onChange={(e) => {
-                                setAvailability((prev) => ({ ...prev, end: e.target.value }));
-                                setIsSaveButtonEnabled(true);
-                            }}
-                        >
-                            {HOURS.map(hour => (
-                                <option key={hour} value={hour}>{hour}</option>
-                            ))}
-                        </select>
-                        <div className='d-flex justify-content-around mt-4'>
-                            <button
-                                style={{ width: "7rem" }}
-                                className='btn btn-primary'
-                                type='submit'
-                                disabled={isSaveButtonEnabled && availability.start < availability.end ? false : true}>
-                                Salvar
-                            </button>
-                            <button
-                                style={{ width: "7rem" }}
-                                className='btn btn-danger'
-                                onClick={() => setIsAvailabilityOpen(false)}>
-                                Cancelar
-                            </button>
-                        </div>
-                    </form>
-                </div>
-                :
-                null
+            {
+                isCreate ?
+                    <div className={`${styles.settingsContainer}`}>
+                        <form ref={formCreteRef} className={`${styles.form}`} onSubmit={(e) => handleCreateOrder(e)}>
+                            <h3 className='fs-5 align-self-center mb-2'>Agendar</h3>
+                            <label htmlFor='customer'>Cliente</label>
+                            <select
+                                className={styles.input}
+                                value={newOrder?.barber}
+                                onChange={(e) => setNewOrder(prev => ({ ...prev, customerId: e.target.value }))}
+                            >
+                                <option defaultChecked>Selecione...</option>
+                                {customers.sort((a, b) => {
+                                    if (a.name.toUpperCase() > b.name.toUpperCase()) {
+                                        return 1;
+                                    } else if (a.name.toUpperCase() < b.name.toUpperCase()) {
+                                        return -1;
+                                    } else {
+                                        return 0;
+                                    }
+                                }).map(customer => (
+                                    <option key={customer.id} value={customer.id}>
+                                        {customer.name}
+                                    </option>
+                                ))}
+                            </select>
+                            <label htmlFor='barber'>Barbeiro</label>
+                            <select
+                                className={styles.input}
+                                disabled={!newOrder?.customerId}
+                                onChange={(e) => setNewOrder(prev => ({ ...prev, barberId: e.target.value }))}
+                            >
+                                <option>Selecione...</option>
+                                {barbers.sort((a, b) => {
+                                    if (a.name.toUpperCase() > b.name.toUpperCase()) {
+                                        return 1;
+                                    } else if (a.name.toUpperCase() < b.name.toUpperCase()) {
+                                        return -1;
+                                    } else {
+                                        return 0;
+                                    }
+                                }).map(barber => (
+                                    <option key={barber.id} value={barber.id}>
+                                        {barber.name}
+                                    </option>
+                                ))}
+                            </select>
+                            <label>Data</label>
+                            {isCalendarOpen ?
+                                <div ref={calendarRef}>
+                                    <Calendar
+                                        className={styles.calendar}
+                                        onClickDay={(value, event) => handleSelectedDate(value, event)}
+                                        tileDisabled={({ activeStartDate, date, view }) => date.setHours(1) < new Date().setHours(0)} />
+                                </div>
+                                :
+                                <select
+                                    className={styles.input}
+                                    disabled={!newOrder.barberId}
+                                    onClick={() => setIsCalendarOpen(true)}>
+                                    {newOrder?.date ?
+                                        null
+                                        :
+                                        <option>Selecione...</option>}
+                                    <option>
+                                        {newOrder?.date ? format(newOrder?.date, 'dd-MM-yyyy') : null}
+                                    </option>
+                                </select>
+                            }
+                            <label>Hora</label>
+                            <select
+                                className={styles.input}
+                                disabled={!newOrder.date}
+                                onChange={(e) => setNewOrder(prev => ({ ...prev, date: prev.date + 'T' + e.target.value + ':00.000Z' }))}>
+                                <option defaultChecked className='bg-primary text-light'>Selecione...</option>
+                                {HOURS.slice(HOURS.indexOf(availability.start), HOURS.indexOf(availability.end) + 1)
+                                    .map(time => (
+                                        <option key={time} value={time}>{time}</option>
+                                    ))}
+                            </select>
+                            <div className='d-flex justify-content-around mt-4'>
+                                <button className='btn btn-success w-25' type='submit'>Salvar</button>
+                                <button className='btn btn-danger w-25' onClick={() => handleSettingsClose("createCancel")}>Cancelar</button>
+                            </div>
+                        </form>
+                    </div>
+                    :
+                    null
             }
-        </section>
+            {
+                isAvailabilityOpen ?
+                    <div className={`${styles.settingsContainer} flex-column justify-content-start`}>
+                        <p className={`bg-danger p-1 rounded ${availability.end <= availability.start ? '' : styles.offscreen}`}>O horário final deve ser maior que o inicial.</p>
+                        <form className='d-flex flex-column' onSubmit={(e) => handleSaveAvailability(e)}>
+                            <h3 className='fs-5 mb-5'>Configurar disponibilidade</h3>
+                            <label>Selecione o início</label>
+                            <select
+                                value={availability.start}
+                                className={styles.input}
+                                onChange={(e) => {
+                                    setAvailability((prev) => ({ ...prev, start: e.target.value }));
+                                    setIsSaveButtonEnabled(true);
+                                }}>
+                                {HOURS.map(hour => (
+                                    <option key={hour} value={hour}>{hour}</option>
+                                ))}
+                            </select>
+                            <label>Selecione o fim</label>
+                            <select
+                                value={availability.end}
+                                className={styles.input}
+                                onChange={(e) => {
+                                    setAvailability((prev) => ({ ...prev, end: e.target.value }));
+                                    setIsSaveButtonEnabled(true);
+                                }}
+                            >
+                                {HOURS.map(hour => (
+                                    <option key={hour} value={hour}>{hour}</option>
+                                ))}
+                            </select>
+                            <div className='d-flex justify-content-around mt-4'>
+                                <button
+                                    style={{ width: "7rem" }}
+                                    className='btn btn-primary'
+                                    type='submit'
+                                    disabled={isSaveButtonEnabled && availability.start < availability.end ? false : true}>
+                                    Salvar
+                                </button>
+                                <button
+                                    style={{ width: "7rem" }}
+                                    className='btn btn-danger'
+                                    onClick={() => setIsAvailabilityOpen(false)}>
+                                    Cancelar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    :
+                    null
+            }
+        </section >
     )
 }
