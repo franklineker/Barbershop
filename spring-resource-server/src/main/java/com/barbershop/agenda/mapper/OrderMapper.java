@@ -2,7 +2,6 @@ package com.barbershop.agenda.mapper;
 
 import com.barbershop.agenda.dto.OrderCreateRequestDto;
 import com.barbershop.agenda.dto.OrderResponseDto;
-import com.barbershop.agenda.dto.OrderUpdateRequestDto;
 import com.barbershop.agenda.entity.Barber;
 import com.barbershop.agenda.entity.Customer;
 import com.barbershop.agenda.entity.Order;
@@ -12,7 +11,7 @@ public class OrderMapper {
 
     public static Order toOrderCreate(OrderCreateRequestDto dto, Barber barber, Customer customer) {
         return dto != null ? Order.builder()
-                .date(dto.getDate())
+                .dateTime(dto.getDateTime())
                 .barber(barber)
                 .customer(customer)
                 .status(OrderStatus.ofCode(dto.getStatusCode()).getDescription())
@@ -22,7 +21,7 @@ public class OrderMapper {
     public static OrderResponseDto toOrderResponseDto (Order order) {
         return order != null ? OrderResponseDto.builder()
                 .id(order.getId())
-                .date(order.getDate())
+                .dateTime(order.getDateTime())
                 .barber(BarberMapper.toBarberResponseDto(order.getBarber()))
                 .customer(CustomerMapper.toCustomerResponse(order.getCustomer()))
                 .statusDescription(order.getStatus())

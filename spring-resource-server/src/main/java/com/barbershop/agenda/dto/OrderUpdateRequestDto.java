@@ -14,6 +14,6 @@ public class OrderUpdateRequestDto {
 
     private Integer id;
     private Integer barberId;
-    private LocalDateTime date;
+    private LocalDateTime dateTime;
     private Integer statusCode;
 }

@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Link } from "react-router-dom";
 import { faCalendarAlt, faScissors, faChartColumn, faHome, faLock, faUser, faUsers, faBars } from '@fortawesome/free-solid-svg-icons';
-import useAuth from "../../hooks/useAuth";
+import useAuth from "../hooks/useAuth";
 
 export default function Menu() {
     const { auth } = useAuth();

@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
-import logo from "../../assets/images/logo.jpg"
+import logo from "../assets/images/logo.jpg"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRightFromBracket } from '@fortawesome/free-solid-svg-icons';
-import useAuth from "../../hooks/useAuth";
+import useAuth from "../hooks/useAuth";
 
 const env = process.env;
 

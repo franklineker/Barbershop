@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Data
 public class OrderCreateRequestDto {
 
-    private LocalDateTime date;
+    private LocalDateTime dateTime;
     private Integer barberId;
     private Integer customerId;
     private Integer statusCode;

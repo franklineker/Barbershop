@@ -1,4 +1,4 @@
-import '../../App.css';
+import '../App.css';
 import React from 'react';
 import Menu from './Menu';
 import Header from './Header';

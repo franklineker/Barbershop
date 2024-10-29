@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useContext, useEffect } from "react"
-import AuthContext from "../../context/AuthProvider";
+import AuthContext from "../context/AuthProvider";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
@@ -16,7 +16,7 @@ export default function Login() {
     const { setAuth } = useContext(AuthContext);
     const navigate = useNavigate();
     const location = useLocation();
-    const from = location?.state?.pathname || "/"
+    const from = location?.state?.pathname || "/";
 
     const handleToken = async () => {
 

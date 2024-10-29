@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect } from "react";
 import CryptoJS from 'crypto-js';
-import useAuth from "../../hooks/useAuth";
+import useAuth from "../hooks/useAuth";
 
 const AUTH_URL = process.env.REACT_APP_AUTHORIZATION_URL;
 const REDIRECT_URI = process.env.REACT_APP_REDIRECT_URL;
@@ -53,8 +53,6 @@ export default function Authorization() {
         body.set("code_challenge", challenge);
 
         const codeURL = AUTH_URL + "?" + body.toString();
-
-        console.log("code url => ", codeURL)
 
         window.location.href = codeURL;
     }

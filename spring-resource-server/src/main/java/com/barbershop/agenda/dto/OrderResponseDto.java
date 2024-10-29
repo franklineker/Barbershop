@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 public class OrderResponseDto {
 
     private Integer id;
-    private LocalDateTime date;
+    private LocalDateTime dateTime;
     private BarberResponseDto barber;
     private CustomerResponseDto customer;
     private String statusDescription;

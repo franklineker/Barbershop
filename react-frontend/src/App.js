@@ -1,20 +1,21 @@
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Route, Routes } from 'react-router-dom';
-import Home from './components/views/Home';
-import Register from './components/views/Register';
-import Login from './components/config/Login';
-import Authorization from './components/config/Authorization';
-import Profile from './components/views/Profile';
-import Help from './components/views/Help';
-import RequireAuth from './components/config/RequireAuth';
-import Layout from './components/templates/Layout';
-import Unauthorized from './components/views/Unauthorized';
-import Reports from './components/views/Reports';
-import Security from './components/views/Security';
-import Agenda from './components/views/Agenda';
-import Barber from './components/views/Barber';
-import Customer from './components/views/Customer';
+import Home from './views/Home';
+import Register from './views/Register';
+import Login from './config/Login';
+import Authorization from './config/Authorization';
+import Profile from './views/Profile';
+import Help from './views/Help';
+import RequireAuth from './config/RequireAuth';
+import Layout from './templates/Layout';
+import Unauthorized from './views/Unauthorized';
+import Reports from './views/Reports';
+import Security from './views/Security';
+import Agenda from './views/Agenda';
+import Barber from './views/Barber';
+import Customer from './views/Customer';
+import { AgendaProvider } from './context/AgendaProvider';
 
 function App() {
     return (
@@ -41,7 +42,11 @@ function App() {
                     <Route path='reports' element={<Reports />} />
                 </Route>
                 <Route element={<RequireAuth allowedRoles={['ADMIN']} />}>
-                    <Route path='agenda' element={<Agenda />} />
+                    <Route path='agenda' element={
+                        <AgendaProvider>
+                            <Agenda />
+                        </AgendaProvider>
+                    } />
                 </Route>
                 <Route element={<RequireAuth allowedRoles={['ADMIN']} />}>
                     <Route path='barbers' element={< Barber />} />

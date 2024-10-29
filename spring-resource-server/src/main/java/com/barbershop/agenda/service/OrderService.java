@@ -15,7 +15,6 @@ import com.barbershop.agenda.repository.OrderRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -53,8 +52,8 @@ public class OrderService {
                     .orElseThrow(() -> new AppEntityNotFoundException("barber_id informed does not match with any registered barber."));
             order.setBarber(barber);
         }
-        if(dto.getDate() != null && dto.getDate() != order.getDate()){
-            order.setDate(dto.getDate());
+        if(dto.getDateTime() != null && dto.getDateTime() != order.getDateTime()){
+            order.setDateTime(dto.getDateTime());
         }
         if(dto.getStatusCode() != null && dto.getStatusCode() != OrderStatus.ofDescripton(order.getStatus()).getCode()){
             order.setStatus(OrderStatus.ofCode(dto.getStatusCode()).getDescription());

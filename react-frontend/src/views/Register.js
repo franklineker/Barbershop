@@ -3,7 +3,7 @@ import styles from '../styles/Register.module.css';
 import { faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Link } from 'react-router-dom';
-import usePrivateResourceAxios from '../../hooks/usePrivateResourceAxios';
+import usePrivateResourceAxios from '../hooks/usePrivateResourceAxios';
 
 const EMAIL_REGEX = /^[A-z0-9._%+-]+@[A-z0-9-.]+\.[A-z]{2,}$/;
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!#@$%]).{8,24}$/;

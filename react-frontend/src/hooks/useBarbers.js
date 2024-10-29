@@ -3,29 +3,30 @@ import { useCallback, useState } from 'react';
 import usePrivateResourceAxios from './usePrivateResourceAxios';
 import { useEffect } from 'react';
 
-const CUSTOMERS_URI = '/customer'
+const BARBER_URI = '/barber'
 
-const useCustomers = () => {
+const useBarbers = () => {
 
     const privateResourceAxios = usePrivateResourceAxios();
-    const [customers, setCustomers] = useState([]);
+    const [barbers, setBarbers] = useState([]);
     const [error, setError] = useState(null);
 
-    const fetchCustomers = useCallback(async () => {
+    const fetchBarbers = useCallback(async () => {
         try {
-            const response = await privateResourceAxios.get(CUSTOMERS_URI);
-            setCustomers(response.data);
+            const response = await privateResourceAxios.get(BARBER_URI);
+            setBarbers(response.data);
         } catch (error) {
             console.log(error);
             setError(error);
         }
     }, []);
 
-    useEffect(() => {
-        fetchCustomers();
-    }, [fetchCustomers]);
 
-    return { customers, error, fetchCustomers };
+    useEffect(() => {
+        fetchBarbers();
+    }, [fetchBarbers]);
+
+    return { barbers, error, fetchBarbers };
 }
 
-export default useCustomers;
+export default useBarbers;

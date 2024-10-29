@@ -1,4 +1,4 @@
-import { useIsAdmin, useIsLogged } from "../../hooks/useTokenDetails"
+import { useIsAdmin, useIsLogged } from "../hooks/useTokenDetails"
 
 export default function Home() {
 

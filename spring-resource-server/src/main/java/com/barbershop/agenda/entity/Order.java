@@ -2,7 +2,6 @@ package com.barbershop.agenda.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -22,7 +21,7 @@ public class Order {
     private Integer id;
 
     @Column(name = "order_date")
-    private LocalDateTime date;
+    private LocalDateTime dateTime;
 
     @ManyToOne
     @JoinColumn(name = "barber_id", nullable = false)
